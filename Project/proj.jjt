@@ -1,0 +1,421 @@
+options{
+    LOOKAHEAD = 1;
+    DEBUG_PARSER = false;
+    MULTI = true;
+    ERROR_REPORTING = true;
+}
+
+
+PARSER_BEGIN(yal2jvm)
+
+import java.io.*;
+import java.util.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+public class yal2jvm {
+
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static String fileName = "";
+    public static String errorIn = "";
+
+    public static void main(String args[]) throws ParseException {
+         yal2jvm parser;
+
+        if(args.length == 0){
+            System.out.println (ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " Reading input ...");
+            parser = new yal2jvm(System.in);
+        }
+        else if(args.length == 1){
+            fileName = args[0];
+            System.out.println (ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " Reading the file " + args[0] + " ..." + ANSI_RESET);
+            try {
+                parser = new yal2jvm(new java.io.FileInputStream(fileName));
+            }
+                catch(java.io.FileNotFoundException e) {
+                System.out.println (ANSI_CYAN + "yal2jvm:" + ANSI_RED + " The file " + args[0] + " was not found." + ANSI_RESET);
+                return;
+            }
+        }
+        else {
+            System.out.println (ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " You must use one of the following:");
+            System.out.println ("         java yal2jvm < file");
+            System.out.println ("Or");
+            System.out.println ("         java yal2jvm file");
+            return ;
+        }
+        try {
+            SimpleNode root = parser.Module();
+            root.dump("");
+            System.out.println (ANSI_CYAN + "yal2jvm:" + ANSI_GREEN + " The input was read sucessfully." + ANSI_RESET);
+        }
+        catch(ParseException e){
+            System.out.println (ANSI_CYAN + "yal2jvm:" + ANSI_RED + " There was an error during the parse." + ANSI_RESET);
+            System.out.println (e.getMessage());
+        }
+        catch(TokenMgrError e){
+            System.out.println (ANSI_CYAN + "yal2jvm:" + ANSI_RED + " There was an error." + ANSI_RESET);
+            System.out.println (e.getMessage());
+        }
+    }
+
+}//Look aheads
+
+PARSER_END(yal2jvm)
+
+<DEFAULT> SKIP : {
+    " "
+    | "\t"
+    | "\n"
+    | "\r"
+    | <"//" (~["\n","\r"])* ("\n" | "\r" | "\r\n")>
+    | <"/*" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
+    }
+
+/* reserved words */
+<DEFAULT> TOKEN : {
+    <RELA_OP: ">" | "<" | "<=" | ">=" | "==" | "!=">
+    | <ADDSUB_OP: "+" | "-">
+    | <ARITH_OP: "*" | "/" | "<<" | ">>" | ">>>">
+    | <BITWISE_OP: "&" | "|" | "^">
+    | <NOT_OP: "!">
+    | <WHILE: "while">
+    | <IF: "if">
+    | <ELSE: "else">
+    | <ASSIGN: "=">
+    | <ASPA: "\"">
+    | <LPAR: "(">
+    | <RPAR: ")">
+    | <VIRG: ",">
+    | <PVIRG: ";">
+    | <LCHAVETA: "{">
+    | <RCHAVETA: "}">
+    | <FUNCTION: "function">
+    | <MODULE: "module">
+    | <SIZE: "size">
+}
+
+<DEFAULT> TOKEN : {
+    <INTEGER: (<DIGIT>)+>
+    | <ID: <LETTER> (<LETTER> | <DIGIT>)*>
+    | <#LETTER: ["$","A"-"Z","_","a"-"z"]>
+    | <#DIGIT: ["0"-"9"]>
+    | <STRING: "\"" (["a"-"z","A"-"Z","0"-"9",":"," ","="])+ "\"">
+}
+
+//Module ::= <MODULE> <ID> <LCHAVETA> ( Declaration )* ( Function )* <RCHAVETA>
+SimpleNode Module() : {Token s; errorIn = "MODULE()";}
+{
+    try {
+        <MODULE>
+         s=<ID> {jjtThis.name = s.image;}
+         <LCHAVETA>
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(LCHAVETA);
+    }
+
+    ( Declaration() )* ( Function() )*
+
+
+    try {
+         <RCHAVETA>
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(RCHAVETA);
+    } {return jjtThis;}
+}
+
+//Declaration ::= ( ArrayElement | ScalarElement ) ( <ASSIGN> ( ( "[" ArraySize "]" ) | ( <ADDSUB_OP> )? <INTEGER> ) )? <PVIRG>
+void Declaration() : {Token s1, s2; errorIn = "DECLARATION()";}
+{
+    try {
+        //<ID> ("[" "]")? ( <ASSIGN> ( ( "[" ArraySize() "]" ) | ( <ADDSUB_OP> )? <INTEGER> ) )? <PVIRG>
+        Element() ( <ASSIGN> ( ( "[" ArraySize() "]" ) | ( s1=<ADDSUB_OP> {jjtThis.operator = s1.image;})? s2=<INTEGER> {jjtThis.integer = s2.image;}) )? <PVIRG>
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(PVIRG);
+    }
+}
+
+//Function ::= ( ( <FUNCTION> ( ArrayElement | ScalarElement ) <ASSIGN> <ID> <LPAR> ( Varlist )? <RPAR> ) | ( <FUNCTION> <ID> <LPAR> ( Varlist )? <RPAR> ) ) <LCHAVETA> Stmtlst <RCHAVETA>
+void Function() : {Token s1,s2; errorIn = "FUNCTION()";}
+{
+    try {
+        <FUNCTION> 
+        s1=<ID> {jjtThis.firstName = s1.image;}
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        Token t;
+        int index = 1;
+         do {
+            t = getToken(index);
+            if (t.kind == LPAR)
+                break;
+            getNextToken();
+        } while (true);
+    }
+
+    try {
+        ( ( ("[" "]")? <ASSIGN> s2=<ID> {jjtThis.secondName = s2.image;} <LPAR> (Varlist())? <RPAR> ) | (<LPAR> ( Varlist() )? <RPAR> ) )
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(RPAR);
+    }
+
+    try {
+        <LCHAVETA> Stmtlst() <RCHAVETA>
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(RCHAVETA);
+    }
+
+    /*try {
+        <FUNCTION>
+        Element()
+    } catch (ParseException e) {
+        errorIn = "FUNCTION()";
+        Token t;
+        int index = 1;
+         do {
+            t = getToken(index);
+            if (t.kind == LPAR)
+                break;
+            getNextToken();
+        } while (true);
+    }
+
+    try {
+        (<ASSIGN> s=<ID> {jjtThis.name = s.image;})? <LPAR> (Varlist())? <RPAR>
+    } catch (ParseException e) {
+        errorIn = "FUNCTION()";
+        Token t;
+        do {
+            t = getNextToken();
+        } while (t.kind != RPAR);
+    }
+
+    try {
+        <LCHAVETA> Stmtlst() <RCHAVETA>
+    } catch (ParseException e) {
+        errorIn = "FUNCTION(): " + e.toString());
+        Token t;
+        do {
+            t = getNextToken();
+        } while (t.kind != RCHAVETA);
+    }*/
+}
+
+//Varlist ::= ( ArrayElement | ScalarElement ) ( <VIRG> ( ArrayElement | ScalarElement ) )*
+void Varlist() : {}
+{
+   Element() ( <VIRG> Element() )*
+}
+
+//ScalarElement ::= <ID>
+void ScalarElement() : {errorIn = "SCALARELEMENT()";}
+{
+    try {
+        <ID>
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(PVIRG);
+    }
+}
+
+void ArrayElement() : {}
+{
+    "[" "]"
+}
+
+void Element() : {Token s;}
+{
+    s=<ID> {jjtThis.name = s.image;}
+    (ArrayElement() | {})
+}
+
+
+//Stmtlst ::= ( Stmt )*
+void Stmtlst() #void : {}
+{
+    ( Stmt() )*
+} 
+
+//Stmt ::= While | If | Assign | Call <PVIRG>
+void Stmt() #void : {errorIn = "CALL()";}
+{   
+    While() | If()| LOOKAHEAD(3) Assign() |
+    try {
+         Call() <PVIRG>
+
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(PVIRG);
+    }
+     
+}
+
+//Assign ::= Lhs <ASSIGN> Rhs <PVIRG>
+void Assign() : {errorIn = "ASSIGN()";}
+{
+    try {
+        Lhs() <ASSIGN> 
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        Token t;
+       skip_to(ASSIGN);
+    }
+
+    try {
+        Rhs() <PVIRG>
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(PVIRG);
+    }
+}
+
+//Lhs ::= ArrayAccess | ScalarAccess
+void Lhs() #void : {}
+{
+    Access()
+}
+
+//Rhs ::= ( Term ( ( <ARITH_OP> | <BITWISE_OP> | <ADDSUB_OP> ) Term )? ) | "[" ArraySize "]" 
+void Rhs() : {Token s;}
+{
+    ( Term() ( ( 
+        s=<ARITH_OP> {jjtThis.operator = s.image;}  | 
+        s= <BITWISE_OP> {jjtThis.operator = s.image;} | 
+        s=<ADDSUB_OP> {jjtThis.operator = s.image;} ) 
+        Term() )? ) | "[" ArraySize() "]" 
+} 
+
+//ArraySize ::= ScalarAccess | <INTEGER>
+void ArraySize() : {Token s1,s2;} 
+{
+    //TODO: rever;
+    (s1=<ID> {jjtThis.name = s1.image;}ScalarAccess()) | s2=<INTEGER> {jjtThis.value = s2.image;}
+}
+
+//Term ::= ( <ADDSUB_OP> )? ( <INTEGER> | Call | ArrayAccess | ScalarAccess )
+void Term() : {Token s1, s2;} 
+{
+    ( s1=<ADDSUB_OP> {jjtThis.operator = s1.image;}  )? 
+    ( s2=<INTEGER> {jjtThis.operator = s2.image;}  | 
+    LOOKAHEAD(3) Call() | Access() )
+}
+
+//Exprtest ::= <LPAR> Lhs <RELA_OP> Rhs <RPAR>
+void Exprtest() : {Token s;} 
+{
+        <LPAR> Lhs()
+        s=<RELA_OP> {jjtThis.operator = s.image;}
+        Rhs() <RPAR>   
+}
+
+//While ::= <WHILE> Exprtest <LCHAVETA> Stmtlst <RCHAVETA>
+void While() : {errorIn = "WHILE()";} 
+{
+    try {
+        <WHILE> Exprtest() <LCHAVETA> 
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(LCHAVETA);
+    }
+
+    try {
+       Stmtlst() <RCHAVETA>
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(RCHAVETA);
+    }
+}
+
+//If ::= <IF> Exprtest <LCHAVETA> Stmtlst <RCHAVETA> ( <ELSE> <LCHAVETA> Stmtlst <RCHAVETA> )?
+void If() : {errorIn = "IF()";} 
+{
+    try {
+        <IF> Exprtest() <LCHAVETA>
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(LCHAVETA);
+    }
+
+    try {
+        Stmtlst() <RCHAVETA> 
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(RCHAVETA);
+    }
+
+    
+
+    try {
+        ( <ELSE>  <LCHAVETA>  Stmtlst() #Else <RCHAVETA> )? 
+    } catch (ParseException e) {
+        System.out.print(e.toString());
+        skip_to(PVIRG);
+    }
+}
+
+//Call ::= <ID> ( "." <ID> )? <LPAR> ( ArgumentList )? <RPAR>
+void Call() : {Token s1,s2;} 
+{
+        s1=<ID> {jjtThis.object = s1.image;}
+        ( "." 
+        s2=<ID> {jjtThis.variable = s2.image;}
+        )? <LPAR> ( ArgumentList() )? <RPAR>
+}
+
+//ArgumentList ::= Argument ( <VIRG> Argument )*
+void ArgumentList() : {} 
+{
+    Argument() ( <VIRG> Argument() )*
+}
+
+//Argument ::= ( <ID> | <STRING> | <INTEGER> )
+void Argument() : {Token s;} 
+{
+    (s=<ID> {jjtThis.name = s.image;} |
+    s=<STRING> {jjtThis.name = s.image;} | 
+    s=<INTEGER> {jjtThis.name = s.image;})
+}
+
+//ArrayAccess ::= <ID> "[" Index "]"
+void ArrayAccess() : {} 
+{
+    "[" Index() "]"
+}
+
+//ScalarAccess ::= <ID> ( "." <SIZE> )?
+void ScalarAccess() #void : {} 
+{
+    ( "." <SIZE> )?
+}
+
+void Access() : {Token s;}
+{
+    s=<ID> {jjtThis.name = s.image;}
+    (ArrayAccess() | ScalarAccess())
+}
+
+
+//Index ::= <ID> | <INTEGER>
+void Index() : {Token s;} 
+{
+    s=<ID> {jjtThis.name = s.image;}|
+    s=<INTEGER> {jjtThis.value = s.image;}
+}
+
+JAVACODE
+void skip_to(int t) #void 
+{
+    Token nextToken;
+     do {
+        nextToken = getNextToken();
+    } while (nextToken.kind != t);
+}

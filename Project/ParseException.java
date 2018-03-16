@@ -9,7 +9,29 @@
  * You can modify this class to customize your error reporting
  * mechanisms so long as you retain the public fields.
  */
+
+import java.io.*;
+import java.util.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 public class ParseException extends Exception {
+
+  public static final String ANSI_RESET = "\u001B[0m";
+  public static final String ANSI_BLACK = "\u001B[30m";
+  public static final String ANSI_RED = "\u001B[31m";
+  public static final String ANSI_GREEN = "\u001B[32m";
+  public static final String ANSI_YELLOW = "\u001B[33m";
+  public static final String ANSI_BLUE = "\u001B[34m";
+  public static final String ANSI_PURPLE = "\u001B[35m";
+  public static final String ANSI_CYAN = "\u001B[36m";
+  public static final String ANSI_WHITE = "\u001B[37m";
+  public static final String ANSI_RED_BOLD = "\033[1;31m";
+  public static final String ANSI_BLUE_BRIGHT = "\033[0;94m";
+  public static final String ANSI_GREEN_BOLD = "\033[1;32m";
+  public static final String ANSI_GREEN_BOLD_BRIGHT = "\033[1;92m";
+
 
   /**
    * The version identifier for this Serializable class.
@@ -101,7 +123,31 @@ public class ParseException extends Exception {
       }
       expected.append(eol).append("    ");
     }
-    String retval = "Encountered \"";
+
+    String retval = ANSI_RED_BOLD + " Error in " + ANSI_RESET + ANSI_BLUE_BRIGHT + yal2jvm.errorIn + ANSI_RED_BOLD + "\n" + ANSI_RESET;
+
+
+
+
+    char[] spaces = new char[currentToken.next.beginColumn-1];
+    Arrays.fill(spaces, ' ');
+    String s = new String(spaces);
+
+    try {
+      FileInputStream fis = new FileInputStream(yal2jvm.fileName);
+      BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+      for(int i = 0; i < currentToken.next.beginLine-1 ; ++i)
+        br.readLine();
+      retval += ANSI_RED + br.readLine() + "\n" + ANSI_GREEN_BOLD + s + "^\n" + ANSI_RESET;
+    }
+      catch(java.io.FileNotFoundException e) {
+      return retval;
+    }
+      catch(java.io.IOException e) {
+      return retval;
+    }
+
+    retval += "Encountered \"";
     Token tok = currentToken.next;
     for (int i = 0; i < maxSize; i++) {
       if (i != 0) retval += " ";
@@ -115,14 +161,13 @@ public class ParseException extends Exception {
       retval += " \"";
       tok = tok.next;
     }
-    retval += "\" at line " + currentToken.next.beginLine + ", column " + currentToken.next.beginColumn;
-    retval += "." + eol;
+    retval += "\" at line " + currentToken.next.beginLine + "." + eol;
     if (expectedTokenSequences.length == 1) {
       retval += "Was expecting:" + eol + "    ";
     } else {
       retval += "Was expecting one of:" + eol + "    ";
     }
-    retval += expected.toString();
+    retval += ANSI_YELLOW + expected.toString() + "\n" + ANSI_RESET;
     return retval;
   }
 
