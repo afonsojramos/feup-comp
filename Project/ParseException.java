@@ -126,9 +126,6 @@ public class ParseException extends Exception {
 
     String retval = ANSI_RED_BOLD + " Error in " + ANSI_RESET + ANSI_BLUE_BRIGHT + yal2jvm.errorIn + ANSI_RED_BOLD + "\n" + ANSI_RESET;
 
-
-
-
     char[] spaces = new char[currentToken.next.beginColumn-1];
     Arrays.fill(spaces, ' ');
     String s = new String(spaces);

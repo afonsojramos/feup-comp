@@ -24,7 +24,7 @@ public class yal2jvm {
     public static String errorIn = "";
 
     public static void main(String args[]) throws ParseException {
-         yal2jvm parser;
+        yal2jvm parser;
 
         if(args.length == 0){
             System.out.println (ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " Reading input ...");
@@ -173,41 +173,6 @@ void Function() : {Token s1,s2; errorIn = "FUNCTION()";}
         System.out.print(e.toString());
         skip_to(RCHAVETA);
     }
-
-    /*try {
-        <FUNCTION>
-        Element()
-    } catch (ParseException e) {
-        errorIn = "FUNCTION()";
-        Token t;
-        int index = 1;
-         do {
-            t = getToken(index);
-            if (t.kind == LPAR)
-                break;
-            getNextToken();
-        } while (true);
-    }
-
-    try {
-        (<ASSIGN> s=<ID> {jjtThis.name = s.image;})? <LPAR> (Varlist())? <RPAR>
-    } catch (ParseException e) {
-        errorIn = "FUNCTION()";
-        Token t;
-        do {
-            t = getNextToken();
-        } while (t.kind != RPAR);
-    }
-
-    try {
-        <LCHAVETA> Stmtlst() <RCHAVETA>
-    } catch (ParseException e) {
-        errorIn = "FUNCTION(): " + e.toString());
-        Token t;
-        do {
-            t = getNextToken();
-        } while (t.kind != RCHAVETA);
-    }*/
 }
 
 //Varlist ::= ( ArrayElement | ScalarElement ) ( <VIRG> ( ArrayElement | ScalarElement ) )*
@@ -297,7 +262,6 @@ void Rhs() : {Token s;}
 //ArraySize ::= ScalarAccess | <INTEGER>
 void ArraySize() : {Token s1,s2;} 
 {
-    //TODO: rever;
     (s1=<ID> {jjtThis.name = s1.image;}ScalarAccess()) | s2=<INTEGER> {jjtThis.value = s2.image;}
 }
 
