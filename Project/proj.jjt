@@ -375,11 +375,12 @@ void Index() : {Token s;}
     s=<INTEGER> {jjtThis.value = s.image;}
 }
 
+// skip_to(int t) - This function consumes until it finds the token given as an argument.
 JAVACODE
 void skip_to(int t) #void 
 {
     Token nextToken;
-     do {
+    do {
         nextToken = getNextToken();
     } while (nextToken.kind != t);
 }

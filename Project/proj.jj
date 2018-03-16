@@ -28,7 +28,7 @@ public class yal2jvm/*@bgen(jjtree)*/implements yal2jvmTreeConstants/*@egen*/ {/
     public static String errorIn = "";
 
     public static void main(String args[]) throws ParseException {
-         yal2jvm parser;
+        yal2jvm parser;
 
         if(args.length == 0){
             System.out.println (ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " Reading input ...");
@@ -260,41 +260,6 @@ void Function() : {/*@bgen(jjtree) Function */
       }
     }
 /*@egen*/
-
-    /*try {
-        <FUNCTION>
-        Element()
-    } catch (ParseException e) {
-        errorIn = "FUNCTION()";
-        Token t;
-        int index = 1;
-         do {
-            t = getToken(index);
-            if (t.kind == LPAR)
-                break;
-            getNextToken();
-        } while (true);
-    }
-
-    try {
-        (<ASSIGN> s=<ID> {jjtThis.name = s.image;})? <LPAR> (Varlist())? <RPAR>
-    } catch (ParseException e) {
-        errorIn = "FUNCTION()";
-        Token t;
-        do {
-            t = getNextToken();
-        } while (t.kind != RPAR);
-    }
-
-    try {
-        <LCHAVETA> Stmtlst() <RCHAVETA>
-    } catch (ParseException e) {
-        errorIn = "FUNCTION(): " + e.toString());
-        Token t;
-        do {
-            t = getNextToken();
-        } while (t.kind != RCHAVETA);
-    }*/
 }
 
 //Varlist ::= ( ArrayElement | ScalarElement ) ( <VIRG> ( ArrayElement | ScalarElement ) )*
@@ -523,7 +488,6 @@ void ArraySize() : {/*@bgen(jjtree) ArraySize */
 {/*@bgen(jjtree) ArraySize */
     try {
 /*@egen*/
-    //TODO: rever;
     (s1=<ID> {jjtn000.name = s1.image;}ScalarAccess()) | s2=<INTEGER>/*@bgen(jjtree)*/
                                                                       {
                                                                         jjtree.closeNodeScope(jjtn000, true);
@@ -951,11 +915,12 @@ void Index() : {/*@bgen(jjtree) Index */
 /*@egen*/
 }
 
+// skip_to(int t) - This function consumes until it finds the token given as an argument.
 JAVACODE
 void skip_to(int t)       
 {
     Token nextToken;
-     do {
+    do {
         nextToken = getNextToken();
     } while (nextToken.kind != t);
 }

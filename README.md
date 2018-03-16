@@ -1,5 +1,16 @@
 # feup-comp
 Projects for the Compilers (COMP) class of the Master in Informatics and Computer Engineering (MIEIC) at the Faculty of Engineering of the University of Porto (FEUP). 
 
-Made in colaboration with [Afonso Ramos](https://github.com/AJRamos308), [David Falcão](https://github.com/davidrsfalcao) and [Julieta Frade](https://github.com/julietafrade97).<br>
-**Completed in 00/00/2018.**
+To build our compiler, one must run the following commands inside of the folder `Project`:
+
+1. `jjtree proj.jjt`
+2. `javacc proj.jj`
+3. `javac *.java`
+
+Optionally, one can just run our script `./build.sh`.
+
+Our class name is `yal2jvm`, and, for that reason, running the compiler is essencialy like this:
+
+`java yal2jvm yal-eval/MyFirstYalExamples/array1.yal`
+
+Made by [Afonso Ramos](https://github.com/AJRamos308), [Julieta Frade](https://github.com/julietafrade97), [Sofia Silva](https://github.com/literallysofia) and [David Falcão](https://github.com/davidrsfalcao).
