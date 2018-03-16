@@ -145,23 +145,9 @@ void Declaration() : {Token s1, s2; errorIn = "DECLARATION()";}
 //Function ::= ( ( <FUNCTION> ( ArrayElement | ScalarElement ) <ASSIGN> <ID> <LPAR> ( Varlist )? <RPAR> ) | ( <FUNCTION> <ID> <LPAR> ( Varlist )? <RPAR> ) ) <LCHAVETA> Stmtlst <RCHAVETA>
 void Function() : {Token s1,s2; errorIn = "FUNCTION()";}
 {
-    try {
-        <FUNCTION> 
-        s1=<ID> {jjtThis.firstName = s1.image;}
-    } catch (ParseException e) {
-        System.out.print(e.toString());
-        Token t;
-        int index = 1;
-         do {
-            t = getToken(index);
-            if (t.kind == LPAR)
-                break;
-            getNextToken();
-        } while (true);
-    }
 
     try {
-        ( ( ("[" "]")? <ASSIGN> s2=<ID> {jjtThis.secondName = s2.image;} <LPAR> (Varlist())? <RPAR> ) | (<LPAR> ( Varlist() )? <RPAR> ) )
+       <FUNCTION> s1=<ID> ( ( FunctionReturn(s1) <ASSIGN> s2=<ID> {jjtThis.name = s2.image;} <LPAR> (Varlist())? <RPAR> ) | (<LPAR> ( Varlist() )? <RPAR> {jjtThis.name = s1.image;}) )
     } catch (ParseException e) {
         System.out.print(e.toString());
         skip_to(RPAR);
@@ -173,6 +159,12 @@ void Function() : {Token s1,s2; errorIn = "FUNCTION()";}
         System.out.print(e.toString());
         skip_to(RCHAVETA);
     }
+}
+
+void FunctionReturn(Token id) #Element: {}
+{
+    {jjtThis.name = id.image;}
+    ("[" "]" #ArrayElement|{})
 }
 
 //Varlist ::= ( ArrayElement | ScalarElement ) ( <VIRG> ( ArrayElement | ScalarElement ) )*
