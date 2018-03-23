@@ -1,0 +1,21 @@
+CHECKPOINT 1 FEEDBACK
+=====================
+Class 5 - Group 54
+
+These notes are based on an analysis of commit 6a6494b97bd64913457e05f74db769eaa07b0599.
+If you believe this is an error, contact your class teacher.
+=====================
+
+High-priority:
+	- Avoid storing large files (e.g., PDFs) in the git repository.
+	- Project has errors:
+		- The ASTFunction class has no field named "secondName", which is used in yal2jvm.java.
+		- This issue is fixed by executing jjtree/javacc again but, if this is necessary, why include the generated Java files at all?
+	- Error messages with colors do not properly work on Windows: consider disabling colors on this platform.
+
+Low-priority:
+	- Use packages, instead of Java's default package
+	- Stop after the first 10 parser errors
+	- Consider rewriting the grammar to avoid use of LOOKAHEADs.
+	- *.class should not be committed to the git repository.
+	- "(...|{})" would be more cleanly specified as "(...)?".
