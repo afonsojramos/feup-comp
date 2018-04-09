@@ -212,23 +212,9 @@ void Function() : {/*@bgen(jjtree) Function */
 {/*@bgen(jjtree) Function */
     try {
 /*@egen*/
-    try {
-        <FUNCTION> 
-        s1=<ID> {jjtn000.firstName = s1.image;}
-    } catch (ParseException e) {
-        System.out.print(e.toString());
-        Token t;
-        int index = 1;
-         do {
-            t = getToken(index);
-            if (t.kind == LPAR)
-                break;
-            getNextToken();
-        } while (true);
-    }
 
     try {
-        ( ( ("[" "]")? <ASSIGN> s2=<ID> {jjtn000.secondName = s2.image;} <LPAR> (Varlist())? <RPAR> ) | (<LPAR> ( Varlist() )? <RPAR> ) )
+       <FUNCTION> s1=<ID> ( ( FunctionReturn(s1) <ASSIGN> s2=<ID> {jjtn000.name = s2.image;} <LPAR> (Varlist())? <RPAR> ) | (<LPAR> ( Varlist() )? <RPAR> {jjtn000.name = s1.image;}) )
     } catch (ParseException e) {
         System.out.print(e.toString());
         skip_to(RPAR);
@@ -254,6 +240,42 @@ void Function() : {/*@bgen(jjtree) Function */
         throw (ParseException)jjte000;
       }
       throw (Error)jjte000;
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+      }
+    }
+/*@egen*/
+}
+
+void FunctionReturn(Token id)         : {/*@bgen(jjtree) Element */
+  ASTElement jjtn000 = new ASTElement(JJTELEMENT);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) Element */
+    try {
+/*@egen*/
+    {jjtn000.name = id.image;}
+    ("["/*@bgen(jjtree) ArrayElement */
+         {
+           ASTArrayElement jjtn001 = new ASTArrayElement(JJTARRAYELEMENT);
+           boolean jjtc001 = true;
+           jjtree.openNodeScope(jjtn001);
+         }
+         try {
+/*@egen*/ "]"/*@bgen(jjtree)*/
+         } finally {
+           if (jjtc001) {
+             jjtree.closeNodeScope(jjtn001, true);
+           }
+         }
+/*@egen*/              |/*@bgen(jjtree)*/
+                           {
+                             jjtree.closeNodeScope(jjtn000, true);
+                             jjtc000 = false;
+                           }
+/*@egen*/{})/*@bgen(jjtree)*/
     } finally {
       if (jjtc000) {
         jjtree.closeNodeScope(jjtn000, true);
