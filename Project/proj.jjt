@@ -164,7 +164,7 @@ void Function() : {Token s1,s2; errorIn = "FUNCTION()";}
 void FunctionReturn(Token id) #Element: {}
 {
     {jjtThis.name = id.image;}
-    ("[" "]" #ArrayElement|{})
+    ("[" "]" #ArrayElement)?
 }
 
 //Varlist ::= ( ArrayElement | ScalarElement ) ( <VIRG> ( ArrayElement | ScalarElement ) )*
@@ -192,7 +192,7 @@ void ArrayElement() : {}
 void Element() : {Token s;}
 {
     s=<ID> {jjtThis.name = s.image;}
-    (ArrayElement() | {})
+    (ArrayElement())?
 }
 
 
