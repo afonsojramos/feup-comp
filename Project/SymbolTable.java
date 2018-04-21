@@ -35,22 +35,4 @@ public class SymbolTable {
         Symbol s = new Symbol(name, type);
         this.variables.add(s);
     }
-
-    public void setReturnSymbol(String name, String type, int size) {
-        Symbol s = new Symbol(name, type);
-        s.setSize(size);
-        this.returnSymbol = s;
-    }
-
-    public void addParameter(String name, String type, int size) {
-        Symbol s = new Symbol(name, type);
-        s.setSize(size);
-        this.parameters.add(s);
-    }
-
-    public void addVariable(String name, String type, int size) {
-        Symbol s = new Symbol(name, type);
-        s.setSize(size);
-        this.variables.add(s);
-    }
 }
