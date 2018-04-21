@@ -4,7 +4,7 @@ public class Symbol {
 
     public Symbol(String name, String type) {
         this.name = name;
-        this.type = type;
+        this.type = type; //"array" or "int"
     }
 
     public String getName() {

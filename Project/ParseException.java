@@ -131,7 +131,7 @@ public class ParseException extends Exception {
     String s = new String(spaces);
 
     try {
-      FileInputStream fis = new FileInputStream(yal2jvm.fileName);
+      FileInputStream fis = new FileInputStream(Proj.fileName);
       BufferedReader br = new BufferedReader(new InputStreamReader(fis));
       for(int i = 0; i < currentToken.next.beginLine-1 ; ++i)
         br.readLine();
