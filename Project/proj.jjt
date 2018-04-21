@@ -13,6 +13,7 @@ import java.util.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 public class yal2jvm {
 
@@ -22,6 +23,7 @@ public class yal2jvm {
     public static final String ANSI_CYAN = "\u001B[36m";
     public static String fileName = "";
     public static String errorIn = "";
+    private HashMap<String, SymbolTable> SymbolTables = new HashMap<String, SymbolTable>();
 
     public static void main(String args[]) throws ParseException {
         yal2jvm parser;

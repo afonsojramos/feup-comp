@@ -5,6 +5,7 @@ import java.util.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 /** Token Manager. */
 @SuppressWarnings("unused")public class yal2jvmTokenManager implements yal2jvmConstants {
