@@ -17,6 +17,7 @@ public class Proj {
     public static String fileName = "";
 
     private HashMap<String, SymbolTable> symbolTables = new HashMap<String, SymbolTable>();
+    private SymbolTable globalSymbolTable;
 
     public static void main(String args[]) throws ParseException {
         yal2jvm parser;
@@ -66,7 +67,7 @@ public class Proj {
     public void fillSymbolTables(SimpleNode root) {
         if (root != null && root instanceof ASTModule) {
             ASTModule module = (ASTModule) root;
-            SymbolTable globalSymbolTable = new SymbolTable();
+            this.globalSymbolTable = new SymbolTable();
 
             for (int i = 0; i < module.jjtGetNumChildren(); i++) {
                 if (module.jjtGetChild(i) instanceof ASTDeclaration) {
@@ -84,7 +85,7 @@ public class Proj {
                     this.symbolTables.put(function.name, newFunctionSymbolTable);
                 }
             }
-            this.symbolTables.put(module.name, globalSymbolTable);
+            this.symbolTables.put(module.name, this.globalSymbolTable);
         }
         printSymbolTables();
     }
@@ -95,49 +96,56 @@ public class Proj {
 
         for (int i = 0; i < function.jjtGetNumChildren(); i++){
 
-            //////TODO: Return Symbol//////
+            //////TODO: Return Symbol
 
-            //////TODO: Parameters//////
+            //////TODO: Parameters
 
 
             //Variables
-            if(function.jjtGetChild(i) instanceof ASTAssign){
-
-                ASTAssign assign = (ASTAssign) function.jjtGetChild(i);
-
-                String name = "";
-                String type = "int";
-
-                for( int j = 0; j < assign.jjtGetNumChildren(); j++){
-
-                    if(assign.jjtGetChild(j) instanceof ASTAccess){
-                        ASTAccess access = (ASTAccess) assign.jjtGetChild(j);
-
-                        name = access.name;                        
-
-                    }
-                    else if( assign.jjtGetChild(j) instanceof ASTRhs){
-                        ASTRhs rhs = (ASTRhs) assign.jjtGetChild(j);
-
-                        for( int k = 0; k < rhs.jjtGetNumChildren(); k++){
-
-                            if(rhs.jjtGetChild(k) instanceof ASTArraySize){
-                                type = "array";
-                            }
-
-                            //TODO: se tiver um filho Term que tem um filho Call, verificar retorno desse call para saber o tipo
-                        }
-                    }
-
-                    //if(while,if,else)
-
-                }
-
-                functionSymbolTable.addVariable(name, type);
-            }
+            if(function.jjtGetChild(i) instanceof ASTAssign || function.jjtGetChild(i) instanceof ASTWhile || function.jjtGetChild(i) instanceof ASTIf || function.jjtGetChild(i) instanceof ASTElse)
+                saveFunctionVariables(functionSymbolTable, function.jjtGetChild(i));
         }
 
         return functionSymbolTable;
+    }
+
+    public void saveFunctionVariables(SymbolTable functionSymbolTable, Node node){
+
+        if(node instanceof ASTAssign){
+            ASTAssign assign = (ASTAssign) node;
+            String name = "";
+            String type = "int";
+
+            for( int i = 0; i < assign.jjtGetNumChildren(); i++){
+                if(assign.jjtGetChild(i) instanceof ASTAccess){
+                    ASTAccess access = (ASTAccess) assign.jjtGetChild(i);
+                    name = access.name;                        
+                }
+
+                else if( assign.jjtGetChild(i) instanceof ASTRhs){
+                    ASTRhs rhs = (ASTRhs) assign.jjtGetChild(i);
+
+                    for( int j = 0; j < rhs.jjtGetNumChildren(); j++){
+                        if(rhs.jjtGetChild(j) instanceof ASTArraySize){
+                            type = "array";
+                        }
+                        //TODO: se tiver um filho Term que tem um filho Call, verificar retorno desse call para saber o tipo
+                    }
+                }
+            }
+
+            if(!this.globalSymbolTable.getVariables().contains(new Symbol(name, type))) //verify if the new symbol isn't on the module symbol table already
+                functionSymbolTable.addVariable(name, type);
+        } 
+
+        else if(node instanceof ASTWhile || node instanceof ASTIf || node instanceof ASTElse){
+            SimpleNode simpleNode = (SimpleNode) node;
+
+            for (int i = 0; i < simpleNode.jjtGetNumChildren(); i++){
+                saveFunctionVariables(functionSymbolTable, simpleNode.jjtGetChild(i));
+            }
+        }
+
     }
 
     public void printSymbolTables() {
