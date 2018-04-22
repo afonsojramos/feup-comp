@@ -79,7 +79,7 @@ public class Proj {
                         globalSymbolTable.addVariable(element.name, "int");
                     }
                 } else if (module.jjtGetChild(i) instanceof ASTFunction) {
-                    ASTFunction function= (ASTFunction) module.jjtGetChild(i);
+                    ASTFunction function = (ASTFunction) module.jjtGetChild(i);
 
                     SymbolTable newFunctionSymbolTable = buildFunctionSymbolTable(function);
                     this.symbolTables.put(function.name, newFunctionSymbolTable);
@@ -90,43 +90,62 @@ public class Proj {
         printSymbolTables();
     }
 
-    public SymbolTable buildFunctionSymbolTable(ASTFunction function){
+    public SymbolTable buildFunctionSymbolTable(ASTFunction function) {
 
         SymbolTable functionSymbolTable = new SymbolTable();
 
-        for (int i = 0; i < function.jjtGetNumChildren(); i++){
+        for (int i = 0; i < function.jjtGetNumChildren(); i++) {
 
-            //////TODO: Return Symbol
+            //Return Symbol
+            if (function.jjtGetChild(i) instanceof ASTElement) {
+                ASTElement element = (ASTElement) function.jjtGetChild(i);
 
-            //////TODO: Parameters
+                if (element.jjtGetNumChildren() == 1) {
+                    functionSymbolTable.setReturnSymbol(element.name, "array");
+                } else {
+                    functionSymbolTable.setReturnSymbol(element.name, "int");
+                }
+            }
 
+            //Parameters
+            if (function.jjtGetChild(i) instanceof ASTVarlist) {
+                for (int j = 0; j < function.jjtGetChild(i).jjtGetNumChildren(); j++) {
+                    ASTElement element = (ASTElement) function.jjtGetChild(i).jjtGetChild(j);
+                    if (element.jjtGetNumChildren() == 1) {
+                        functionSymbolTable.addParameter(element.name, "array");
+                    } else {
+                        functionSymbolTable.addParameter(element.name, "int");
+                    }
+                }
+            }
 
             //Variables
-            if(function.jjtGetChild(i) instanceof ASTAssign || function.jjtGetChild(i) instanceof ASTWhile || function.jjtGetChild(i) instanceof ASTIf || function.jjtGetChild(i) instanceof ASTElse)
+            if (function.jjtGetChild(i) instanceof ASTAssign || function.jjtGetChild(i) instanceof ASTWhile
+                    || function.jjtGetChild(i) instanceof ASTIf || function.jjtGetChild(i) instanceof ASTElse)
                 saveFunctionVariables(functionSymbolTable, function.jjtGetChild(i));
         }
 
         return functionSymbolTable;
     }
 
-    public void saveFunctionVariables(SymbolTable functionSymbolTable, Node node){
+    public void saveFunctionVariables(SymbolTable functionSymbolTable, Node node) {
 
-        if(node instanceof ASTAssign){
+        if (node instanceof ASTAssign) {
             ASTAssign assign = (ASTAssign) node;
             String name = "";
             String type = "int";
 
-            for( int i = 0; i < assign.jjtGetNumChildren(); i++){
-                if(assign.jjtGetChild(i) instanceof ASTAccess){
+            for (int i = 0; i < assign.jjtGetNumChildren(); i++) {
+                if (assign.jjtGetChild(i) instanceof ASTAccess) {
                     ASTAccess access = (ASTAccess) assign.jjtGetChild(i);
-                    name = access.name;                        
+                    name = access.name;
                 }
 
-                else if( assign.jjtGetChild(i) instanceof ASTRhs){
+                else if (assign.jjtGetChild(i) instanceof ASTRhs) {
                     ASTRhs rhs = (ASTRhs) assign.jjtGetChild(i);
 
-                    for( int j = 0; j < rhs.jjtGetNumChildren(); j++){
-                        if(rhs.jjtGetChild(j) instanceof ASTArraySize){
+                    for (int j = 0; j < rhs.jjtGetNumChildren(); j++) {
+                        if (rhs.jjtGetChild(j) instanceof ASTArraySize) {
                             type = "array";
                         }
                         //TODO: se tiver um filho Term que tem um filho Call, verificar retorno desse call para saber o tipo
@@ -134,14 +153,14 @@ public class Proj {
                 }
             }
 
-            if(!this.globalSymbolTable.getVariables().contains(new Symbol(name, type))) //verify if the new symbol isn't on the module symbol table already
+            if (!this.globalSymbolTable.getVariables().contains(new Symbol(name, type))) //verify if the new symbol isn't on the module symbol table already
                 functionSymbolTable.addVariable(name, type);
-        } 
+        }
 
-        else if(node instanceof ASTWhile || node instanceof ASTIf || node instanceof ASTElse){
+        else if (node instanceof ASTWhile || node instanceof ASTIf || node instanceof ASTElse) {
             SimpleNode simpleNode = (SimpleNode) node;
 
-            for (int i = 0; i < simpleNode.jjtGetNumChildren(); i++){
+            for (int i = 0; i < simpleNode.jjtGetNumChildren(); i++) {
                 saveFunctionVariables(functionSymbolTable, simpleNode.jjtGetChild(i));
             }
         }
@@ -161,8 +180,9 @@ public class Proj {
             for (Symbol s : symbolTables.get(key).getVariables()) {
                 System.out.println("   - Variable Symbol: " + s.getName() + " - " + s.getType());
             }
-            if(symbolTables.get(key).getReturnSymbol() != null)
-                System.out.println("   - Return Symbol: " + symbolTables.get(key).getReturnSymbol());
+            if (symbolTables.get(key).getReturnSymbol() != null)
+                System.out.println("   - Return Symbol: " + symbolTables.get(key).getReturnSymbol().getName() + " - "
+                        + symbolTables.get(key).getReturnSymbol().getType());
         }
     }
 }
