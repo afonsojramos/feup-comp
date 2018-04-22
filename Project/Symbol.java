@@ -14,4 +14,13 @@ public class Symbol {
     public String getType() {
         return this.type;
     }
+
+    public boolean equals(Object symbol){
+        Symbol s=(Symbol) symbol;
+        return this.name.equals(s.getName());
+    }
+
+    public int hashCode(){
+        return name.hashCode();
+    }
 }

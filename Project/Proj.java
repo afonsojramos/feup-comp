@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+
 import java.util.Iterator;
 
 public class Proj {
@@ -77,7 +78,10 @@ public class Proj {
                         globalSymbolTable.addVariable(element.name, "int");
                     }
                 } else if (module.jjtGetChild(i) instanceof ASTFunction) {
+                    ASTFunction function= (ASTFunction) module.jjtGetChild(i);
 
+                    SymbolTable newFunctionSymbolTable = buildFunctionSymbolTable(function);
+                    this.symbolTables.put(function.name, newFunctionSymbolTable);
                 }
             }
             this.symbolTables.put(module.name, globalSymbolTable);
@@ -85,21 +89,72 @@ public class Proj {
         printSymbolTables();
     }
 
+    public SymbolTable buildFunctionSymbolTable(ASTFunction function){
+
+        SymbolTable functionSymbolTable = new SymbolTable();
+
+        for (int i = 0; i < function.jjtGetNumChildren(); i++){
+
+            //////TODO: Return Symbol//////
+
+            //////TODO: Parameters//////
+
+
+            //Variables
+            if(function.jjtGetChild(i) instanceof ASTAssign){
+
+                ASTAssign assign = (ASTAssign) function.jjtGetChild(i);
+
+                String name = "";
+                String type = "int";
+
+                for( int j = 0; j < assign.jjtGetNumChildren(); j++){
+
+                    if(assign.jjtGetChild(j) instanceof ASTAccess){
+                        ASTAccess access = (ASTAccess) assign.jjtGetChild(j);
+
+                        name = access.name;                        
+
+                    }
+                    else if( assign.jjtGetChild(j) instanceof ASTRhs){
+                        ASTRhs rhs = (ASTRhs) assign.jjtGetChild(j);
+
+                        for( int k = 0; k < rhs.jjtGetNumChildren(); k++){
+
+                            if(rhs.jjtGetChild(k) instanceof ASTArraySize){
+                                type = "array";
+                            }
+
+                            //TODO: se tiver um filho Term que tem um filho Call, verificar retorno desse call para saber o tipo
+                        }
+                    }
+
+                    //if(while,if,else)
+
+                }
+
+                functionSymbolTable.addVariable(name, type);
+            }
+        }
+
+        return functionSymbolTable;
+    }
+
     public void printSymbolTables() {
         Iterator it = symbolTables.keySet().iterator();
         while (it.hasNext()) {
             String key = (String) it.next();
-            System.out.println("Scope: " + key);
+            System.out.println(" > SCOPE: " + key);
 
             for (Symbol s : symbolTables.get(key).getParameters()) {
-                System.out.println("Parameter Symbol: " + s.getName() + " - " + s.getType());
+                System.out.println("   - Parameter Symbol: " + s.getName() + " - " + s.getType());
             }
 
             for (Symbol s : symbolTables.get(key).getVariables()) {
-                System.out.println("Variable Symbol: " + s.getName() + " - " + s.getType());
+                System.out.println("   - Variable Symbol: " + s.getName() + " - " + s.getType());
             }
-
-            System.out.println("Return Symbol: " + symbolTables.get(key).getReturnSymbol());
+            if(symbolTables.get(key).getReturnSymbol() != null)
+                System.out.println("   - Return Symbol: " + symbolTables.get(key).getReturnSymbol());
         }
     }
-}//Look aheads
+}
