@@ -1,3 +1,11 @@
 *.class
 proj.jj
 yal2jvm.java
+yal2jvmTreeConstants.java
+yal2jvmConstants.java
+yal2jvmTokenManager.java
+TokenMgrError.java
+Token.java
+SimpleCharStream.java
+Node.java
+JJTyal2jvmState.java
