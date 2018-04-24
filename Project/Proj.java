@@ -52,7 +52,8 @@ public class Proj {
         try {
             SimpleNode root = parser.Module();
             root.dump("");
-            fillSymbolTables(root);
+            buildSymbolTables(root);
+            fillFunctionSymbolTables(root);
             System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_GREEN + " The input was read sucessfully." + ANSI_RESET);
         } catch (ParseException e) {
             System.out
@@ -64,7 +65,7 @@ public class Proj {
         }
     }
 
-    public void fillSymbolTables(SimpleNode root) {
+    public void buildSymbolTables(SimpleNode root) {
         if (root != null && root instanceof ASTModule) {
             ASTModule module = (ASTModule) root;
             this.globalSymbolTable = new SymbolTable();
@@ -81,51 +82,57 @@ public class Proj {
                 } else if (module.jjtGetChild(i) instanceof ASTFunction) {
                     ASTFunction function = (ASTFunction) module.jjtGetChild(i);
 
-                    SymbolTable newFunctionSymbolTable = buildFunctionSymbolTable(function);
-                    this.symbolTables.put(function.name, newFunctionSymbolTable);
+                    this.symbolTables.put(function.name, new SymbolTable());
                 }
             }
             this.symbolTables.put(module.name, this.globalSymbolTable);
         }
-        printSymbolTables();
     }
 
-    public SymbolTable buildFunctionSymbolTable(ASTFunction function) {
+    public void fillFunctionSymbolTables(SimpleNode root){
+        if (root != null && root instanceof ASTModule) {
+            ASTModule module = (ASTModule) root;
 
-        SymbolTable functionSymbolTable = new SymbolTable();
+            for (int i = 0; i < module.jjtGetNumChildren(); i++) {
+                if (module.jjtGetChild(i) instanceof ASTFunction) {
+                    ASTFunction function = (ASTFunction) module.jjtGetChild(i);
+                    SymbolTable functionSymbolTable = this.symbolTables.get(function.name);
 
-        for (int i = 0; i < function.jjtGetNumChildren(); i++) {
+                    for (int j = 0; j < function.jjtGetNumChildren(); j++) {
 
-            //Return Symbol
-            if (function.jjtGetChild(i) instanceof ASTElement) {
-                ASTElement element = (ASTElement) function.jjtGetChild(i);
-
-                if (element.jjtGetNumChildren() == 1) {
-                    functionSymbolTable.setReturnSymbol(element.name, "array");
-                } else {
-                    functionSymbolTable.setReturnSymbol(element.name, "int");
-                }
-            }
-
-            //Parameters
-            if (function.jjtGetChild(i) instanceof ASTVarlist) {
-                for (int j = 0; j < function.jjtGetChild(i).jjtGetNumChildren(); j++) {
-                    ASTElement element = (ASTElement) function.jjtGetChild(i).jjtGetChild(j);
-                    if (element.jjtGetNumChildren() == 1) {
-                        functionSymbolTable.addParameter(element.name, "array");
-                    } else {
-                        functionSymbolTable.addParameter(element.name, "int");
+                        //Return Symbol
+                        if (function.jjtGetChild(j) instanceof ASTElement) {
+                            ASTElement element = (ASTElement) function.jjtGetChild(j);
+            
+                            if (element.jjtGetNumChildren() == 1) {
+                                functionSymbolTable.setReturnSymbol(element.name, "array");
+                            } else {
+                                functionSymbolTable.setReturnSymbol(element.name, "int");
+                            }
+                        }
+            
+                        //Parameters
+                        if (function.jjtGetChild(j) instanceof ASTVarlist) {
+                            for (int k = 0; k < function.jjtGetChild(j).jjtGetNumChildren(); k++) {
+                                ASTElement element = (ASTElement) function.jjtGetChild(j).jjtGetChild(k);
+                                if (element.jjtGetNumChildren() == 1) {
+                                    functionSymbolTable.addParameter(element.name, "array");
+                                } else {
+                                    functionSymbolTable.addParameter(element.name, "int");
+                                }
+                            }
+                        }
+            
+                        //Variables
+                        if (function.jjtGetChild(j) instanceof ASTAssign || function.jjtGetChild(j) instanceof ASTWhile
+                                || function.jjtGetChild(j) instanceof ASTIf || function.jjtGetChild(j) instanceof ASTElse)
+                            saveFunctionVariables(functionSymbolTable, function.jjtGetChild(j));
                     }
+                    
                 }
             }
-
-            //Variables
-            if (function.jjtGetChild(i) instanceof ASTAssign || function.jjtGetChild(i) instanceof ASTWhile
-                    || function.jjtGetChild(i) instanceof ASTIf || function.jjtGetChild(i) instanceof ASTElse)
-                saveFunctionVariables(functionSymbolTable, function.jjtGetChild(i));
         }
-
-        return functionSymbolTable;
+        printSymbolTables();
     }
 
     public void saveFunctionVariables(SymbolTable functionSymbolTable, Node node) {
@@ -153,8 +160,9 @@ public class Proj {
                 }
             }
 
-            if (!this.globalSymbolTable.getVariables().contains(new Symbol(name, type))) //verify if the new symbol isn't on the module symbol table already
+            if(canAddVariable(functionSymbolTable, name, type))
                 functionSymbolTable.addVariable(name, type);
+
         }
 
         else if (node instanceof ASTWhile || node instanceof ASTIf || node instanceof ASTElse) {
@@ -166,6 +174,23 @@ public class Proj {
         }
 
     }
+
+    public boolean canAddVariable(SymbolTable functionSymbolTable, String name, String type){
+
+        if (!this.globalSymbolTable.getVariables().contains(new Symbol(name, type))){//verify if the new symbol isn't on the module symbol table already
+            if(!functionSymbolTable.getParameters().contains(new Symbol(name, type))){ //verify if the new symbol isn't on the function's parameters already
+                if(functionSymbolTable.getReturnSymbol()!=null){ //if the function returns a symbol
+                    if(!functionSymbolTable.getReturnSymbol().equals(new Symbol(name, type))) // if the return symbol isnt't the new one
+                    return true;
+                }
+                else{
+                    return true;
+                }
+            }
+        }
+        return false;   
+    }
+    
 
     public void printSymbolTables() {
         Iterator it = symbolTables.keySet().iterator();

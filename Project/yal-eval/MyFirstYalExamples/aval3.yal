@@ -2,7 +2,7 @@
 module aval3 
 {
 
-function c=f(a, b) {
+function f(a, b) {
     if(a >= b) {
 	c = 2;
     } else {
@@ -13,7 +13,7 @@ function c=f(a, b) {
 function main() {
    a=2;
    b=3;
-   a=f(a,b);
+   a=f(3,b);
    io.println(a);    // result = 4
 
    a=6;
