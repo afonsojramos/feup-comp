@@ -155,7 +155,19 @@ public class Proj {
                         if (rhs.jjtGetChild(j) instanceof ASTArraySize) {
                             type = "array";
                         }
-                        //TODO: se tiver um filho Term que tem um filho Call, verificar retorno desse call para saber o tipo
+
+                        if (rhs.jjtGetChild(j) instanceof ASTTerm) {
+                            ASTTerm term = (ASTTerm) rhs.jjtGetChild(j);
+
+                            if(term.jjtGetNumChildren()>0 && term.jjtGetChild(0) instanceof ASTCall){
+                                ASTCall call = (ASTCall) term.jjtGetChild(0);
+                                String functionName = call.object;
+
+                                if(this.symbolTables.containsKey(functionName)) //if the functions belongs to this module
+                                    type=symbolTables.get(functionName).getReturnSymbol().getType(); //gets that function return type
+                                else type = "int"; //otherwise it's int
+                            }
+                        }
                     }
                 }
             }
