@@ -22,17 +22,27 @@ public class SymbolTable {
         return this.returnSymbol;
     }
 
-    public void setReturnSymbol(String name, String type) {
-        this.returnSymbol = new Symbol(name, type);
+    public void setReturnSymbol(String name, String type, int register) {
+        Symbol s = new Symbol(name, type);
+        s.setRegister(register);
+        this.returnSymbol = s;
     }
 
-    public void addParameter(String name, String type) {
+    public boolean addParameter(String name, String type, int register) {
         Symbol s = new Symbol(name, type);
-        this.parameters.add(s);
+        if(this.parameters.add(s)){
+            s.setRegister(register);
+            return true;
+        }
+        else return false;
     }
 
-    public void addVariable(String name, String type) {
+    public boolean addVariable(String name, String type, int register) {
         Symbol s = new Symbol(name, type);
-        this.variables.add(s);
+        if(this.variables.add(s)){
+            s.setRegister(register);
+            return true;
+        }
+        else return false;
     }
 }

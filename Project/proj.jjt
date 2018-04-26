@@ -271,9 +271,9 @@ void If() : {errorIn = "IF()";}
 //Call ::= <ID> ( "." <ID> )? <LPAR> ( ArgumentList )? <RPAR>
 void Call() : {Token s1,s2;} 
 {
-        s1=<ID> {jjtThis.object = s1.image;}
+        s1=<ID> {jjtThis.function = s1.image;}
         ( "." 
-        s2=<ID> {jjtThis.variable = s2.image;}
+        s2=<ID> {jjtThis.module = jjtThis.function; jjtThis.function = s2.image;}
         )? <LPAR> ( ArgumentList() )? <RPAR>
 }
 

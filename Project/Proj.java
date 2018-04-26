@@ -17,7 +17,8 @@ public class Proj {
     public static String fileName = "";
 
     private HashMap<String, SymbolTable> symbolTables = new HashMap<String, SymbolTable>();
-    private SymbolTable globalSymbolTable;
+    private String moduleName;
+    private int registerCounter = 0;
 
     public static void main(String args[]) throws ParseException {
         yal2jvm parser;
@@ -68,16 +69,17 @@ public class Proj {
     public void buildSymbolTables(SimpleNode root) {
         if (root != null && root instanceof ASTModule) {
             ASTModule module = (ASTModule) root;
-            this.globalSymbolTable = new SymbolTable();
-
+            this.moduleName = module.name;
+            SymbolTable globalSymbolTable = new SymbolTable();
+            
             for (int i = 0; i < module.jjtGetNumChildren(); i++) {
                 if (module.jjtGetChild(i) instanceof ASTDeclaration) {
                     ASTElement element = (ASTElement) module.jjtGetChild(i).jjtGetChild(0);
 
                     if (root.jjtGetChild(i).jjtGetNumChildren() == 2) {
-                        globalSymbolTable.addVariable(element.name, "array");
+                        globalSymbolTable.addVariable(element.name, "array",-1);
                     } else {
-                        globalSymbolTable.addVariable(element.name, "int");
+                        globalSymbolTable.addVariable(element.name, "int",-1);
                     }
                 } else if (module.jjtGetChild(i) instanceof ASTFunction) {
                     ASTFunction function = (ASTFunction) module.jjtGetChild(i);
@@ -85,7 +87,7 @@ public class Proj {
                     this.symbolTables.put(function.name, new SymbolTable());
                 }
             }
-            this.symbolTables.put(module.name, this.globalSymbolTable);
+            this.symbolTables.put(module.name, globalSymbolTable);
         }
     }
 
@@ -98,6 +100,8 @@ public class Proj {
                     ASTFunction function = (ASTFunction) module.jjtGetChild(i);
                     SymbolTable functionSymbolTable = this.symbolTables.get(function.name);
 
+                    this.registerCounter = 0;
+
                     for (int j = 0; j < function.jjtGetNumChildren(); j++) {
 
                         //Return Symbol
@@ -105,9 +109,11 @@ public class Proj {
                             ASTElement element = (ASTElement) function.jjtGetChild(j);
             
                             if (element.jjtGetNumChildren() == 1) {
-                                functionSymbolTable.setReturnSymbol(element.name, "array");
+                                functionSymbolTable.setReturnSymbol(element.name, "array", this.registerCounter);
+                                this.registerCounter = this.registerCounter + 1;
                             } else {
-                                functionSymbolTable.setReturnSymbol(element.name, "int");
+                                functionSymbolTable.setReturnSymbol(element.name, "int", this.registerCounter);
+                                this.registerCounter = this.registerCounter + 1;
                             }
                         }
             
@@ -116,9 +122,11 @@ public class Proj {
                             for (int k = 0; k < function.jjtGetChild(j).jjtGetNumChildren(); k++) {
                                 ASTElement element = (ASTElement) function.jjtGetChild(j).jjtGetChild(k);
                                 if (element.jjtGetNumChildren() == 1) {
-                                    functionSymbolTable.addParameter(element.name, "array");
+                                    if(functionSymbolTable.addParameter(element.name, "array", this.registerCounter))
+                                        this.registerCounter = this.registerCounter + 1;
                                 } else {
-                                    functionSymbolTable.addParameter(element.name, "int");
+                                    if(functionSymbolTable.addParameter(element.name, "int", this.registerCounter))
+                                        this.registerCounter = this.registerCounter + 1;
                                 }
                             }
                         }
@@ -161,9 +169,10 @@ public class Proj {
 
                             if(term.jjtGetNumChildren()>0 && term.jjtGetChild(0) instanceof ASTCall){
                                 ASTCall call = (ASTCall) term.jjtGetChild(0);
-                                String functionName = call.object;
+                                String functionName = call.function;
+                                String functionModule = call.module;
 
-                                if(this.symbolTables.containsKey(functionName)) //if the functions belongs to this module
+                                if(functionModule.equals("")) //if the functions belongs to this module
                                     type=symbolTables.get(functionName).getReturnSymbol().getType(); //gets that function return type
                                 else type = "int"; //otherwise it's int
                             }
@@ -172,8 +181,11 @@ public class Proj {
                 }
             }
 
-            if(canAddVariable(functionSymbolTable, name, type))
-                functionSymbolTable.addVariable(name, type);
+            if(canAddVariable(functionSymbolTable, name, type)){
+                if(functionSymbolTable.addVariable(name, type, this.registerCounter))
+                    this.registerCounter = this.registerCounter + 1;
+            }
+                
 
         }
 
@@ -189,7 +201,7 @@ public class Proj {
 
     public boolean canAddVariable(SymbolTable functionSymbolTable, String name, String type){
 
-        if (!this.globalSymbolTable.getVariables().contains(new Symbol(name, type))){//verify if the new symbol isn't on the module symbol table already
+        if (!this.symbolTables.get(this.moduleName).getVariables().contains(new Symbol(name, type))){//verify if the new symbol isn't on the module symbol table already
             if(!functionSymbolTable.getParameters().contains(new Symbol(name, type))){ //verify if the new symbol isn't on the function's parameters already
                 if(functionSymbolTable.getReturnSymbol()!=null){ //if the function returns a symbol
                     if(!functionSymbolTable.getReturnSymbol().equals(new Symbol(name, type))) // if the return symbol isnt't the new one
@@ -208,18 +220,24 @@ public class Proj {
         Iterator it = symbolTables.keySet().iterator();
         while (it.hasNext()) {
             String key = (String) it.next();
-            System.out.println(" > SCOPE: " + key);
+            if(key.equals(this.moduleName))
+                System.out.println(" > MODULE: " + key);
+            else System.out.println(" > SCOPE: " + key);
 
             for (Symbol s : symbolTables.get(key).getParameters()) {
-                System.out.println("   - Parameter Symbol: " + s.getName() + " - " + s.getType());
+                System.out.println("   - Parameter Symbol: " + s.getName() + " - " + s.getType()  + " - " + s.getRegister());
             }
 
             for (Symbol s : symbolTables.get(key).getVariables()) {
-                System.out.println("   - Variable Symbol: " + s.getName() + " - " + s.getType());
+                System.out.print("   - Variable Symbol: " + s.getName() + " - " + s.getType());
+                if(s.getRegister()!=-1)
+                    System.out.print(" - " + s.getRegister());
+
+                System.out.print('\n');
             }
             if (symbolTables.get(key).getReturnSymbol() != null)
                 System.out.println("   - Return Symbol: " + symbolTables.get(key).getReturnSymbol().getName() + " - "
-                        + symbolTables.get(key).getReturnSymbol().getType());
+                        + symbolTables.get(key).getReturnSymbol().getType()  + " - " + symbolTables.get(key).getReturnSymbol().getRegister());
         }
     }
 }

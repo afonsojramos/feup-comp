@@ -2,8 +2,8 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=false,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 public
 class ASTCall extends SimpleNode {
-  public String object = "";
-  public String variable = "";
+  public String module = "";
+  public String function = "";
   public ASTCall(int id) {
     super(id);
   }
@@ -12,7 +12,7 @@ class ASTCall extends SimpleNode {
     super(p, id);
   }
 
-  public String toString() { return yal2jvmTreeConstants.jjtNodeName[id] + " " + this.object + " " + this.variable;  }
+  public String toString() { return yal2jvmTreeConstants.jjtNodeName[id] + " " + this.module + " " + this.function;  }
 
 }
 /* JavaCC - OriginalChecksum=6d18b8b1e20fc91392f24d670099a0a1 (do not edit this line) */
