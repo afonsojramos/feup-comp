@@ -27,14 +27,31 @@ public class SymbolTable {
         this.returnSymbol = s;
     }
 
-    public void addParameter(String name, String type, int register) {
-        Symbol s = new Symbol(name, type, register);
-        this.parameters.put(name, s);
+    public boolean addParameter(String name, String type, int register) {
+
+        if(this.parameters.containsKey(name)){
+            return false;
+        }
+        else{
+            Symbol s = new Symbol(name, type, register);
+            this.parameters.put(name, s);
+            return true;
+        }
+       
     }
 
-    public void addVariable(String name, String type, int register) {
-        Symbol s = new Symbol(name, type, register);
-        this.variables.put(name, s);
+    public boolean addVariable(String name, String type, int register) {
+
+        if(this.variables.containsKey(name)){
+            return false;
+        }
+        else{
+            Symbol s = new Symbol(name, type, register);
+            this.variables.put(name, s);
+            return true;
+        }
+       
+
     }
 
     public String getVariableType (String name){

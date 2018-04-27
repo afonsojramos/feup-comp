@@ -122,10 +122,15 @@ public class Proj {
                         if (function.jjtGetChild(j) instanceof ASTVarlist) {
                             for (int k = 0; k < function.jjtGetChild(j).jjtGetNumChildren(); k++) {
                                 ASTElement element = (ASTElement) function.jjtGetChild(j).jjtGetChild(k);
-                                if (element.jjtGetNumChildren() == 1)
-                                    functionSymbolTable.addParameter(element.name, "array", this.registerCounter++);
-                                else
-                                    functionSymbolTable.addParameter(element.name, "int", this.registerCounter++);
+                                if (element.jjtGetNumChildren() == 1){
+                                    if(functionSymbolTable.addParameter(element.name, "array", this.registerCounter))
+                                        this.registerCounter++;
+                                }   
+                                else{
+                                    if(functionSymbolTable.addParameter(element.name, "int", this.registerCounter))
+                                        this.registerCounter++;
+                                }
+                                    
                             }
                         }
             
@@ -190,7 +195,8 @@ public class Proj {
             }
 
             if(canAddVariable(functionSymbolTable, name, type, this.registerCounter)){
-                functionSymbolTable.addVariable(name, type, this.registerCounter++);
+                if(functionSymbolTable.addVariable(name, type, this.registerCounter))
+                    this.registerCounter++;
             }
                 
 
