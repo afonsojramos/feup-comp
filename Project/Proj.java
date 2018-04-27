@@ -293,38 +293,53 @@ public class Proj {
 
                 //declarations
                 if (module.jjtGetChild(i) instanceof ASTDeclaration) {
-                    ASTElement element = (ASTElement) module.jjtGetChild(i).jjtGetChild(0);
-
-                    String type = this.symbolTables.get(module.name).getVariableType(element.name);
-
-                    if(type.equals("int"))
-                        file.println(".field static " + element.name + " I");
-                    else if (type.equals("array"))
-                        file.println(".field static " + element.name + " [I");
-
+                   
+                    ASTDeclaration declaration = (ASTDeclaration) module.jjtGetChild(i);
+                    declarationsToJvm(file, declaration);
 
                 //functions
                 } else if (module.jjtGetChild(i) instanceof ASTFunction) {
                     ASTFunction function = (ASTFunction) module.jjtGetChild(i);
-
-                    file.println("\n.method public static " + function.name);
-
-                    Symbol returnSymbol = this.symbolTables.get(function.name).getReturnSymbol();
-
-                    if(returnSymbol != null){
-                        if(returnSymbol.getType().equals("int"))
-                            file.println(function.name + "([Ljava/lang/String;)I");
-                        else if (returnSymbol.getType().equals("array"))
-                            file.println(function.name + "([Ljava/lang/String;)[I");
-                    }
-                    else 
-                        file.println(function.name + "([Ljava/lang/String;)V");
-                    
+                    functionToJvm(file, function);
                 }
             }
 
         }
 
         file.close();
+    }
+
+    public void declarationsToJvm(PrintWriter file, ASTDeclaration declaration){
+
+        ASTElement element = (ASTElement) declaration.jjtGetChild(0);
+
+        String type = this.symbolTables.get(this.moduleName).getVariables().get(element.name).getType();
+
+        if(type.equals("int"))
+            file.println(".field static " + element.name + " I");
+        else if (type.equals("array"))
+            file.println(".field static " + element.name + " [I");
+    }
+
+
+    public void functionToJvm(PrintWriter file, ASTFunction function){
+        file.println("\n.method public static ");
+
+        if(function.name.equals("main")){
+            file.println("main([Ljava/lang/String;)V");
+        }
+        else{
+            Symbol returnSymbol = this.symbolTables.get(function.name).getReturnSymbol();
+
+            if(returnSymbol != null){
+                if(returnSymbol.getType().equals("int"))
+                    file.println(function.name + "()I");
+                else if (returnSymbol.getType().equals("array"))
+                    file.println(function.name + "()[I");
+                }
+            else 
+                file.println(function.name + "()V");
+        }
+  
     }
 }
