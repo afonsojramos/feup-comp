@@ -6,7 +6,7 @@
 .field static mn I
 
 .method public static det
-det([Ljava/lang/String;)[I
+det([Ljava/lang/String;)V
 
 .method public static main
 main([Ljava/lang/String;)V

@@ -1,20 +1,20 @@
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 
 public class SymbolTable {
-    private HashSet<Symbol> parameters;
-    private HashSet<Symbol> variables;
+    private LinkedHashMap<String, Symbol> parameters;
+    private LinkedHashMap<String, Symbol> variables;
     private Symbol returnSymbol = null;
 
     public SymbolTable() {
-        this.parameters = new HashSet<Symbol>();
-        this.variables = new HashSet<Symbol>();
+        this.parameters = new LinkedHashMap<String, Symbol>();
+        this.variables = new LinkedHashMap<String, Symbol>();
     }
 
-    public HashSet<Symbol> getParameters() {
+    public LinkedHashMap<String, Symbol> getParameters() {
         return this.parameters;
     }
 
-    public HashSet<Symbol> getVariables() {
+    public LinkedHashMap<String, Symbol> getVariables() {
         return this.variables;
     }
 
@@ -23,35 +23,25 @@ public class SymbolTable {
     }
 
     public void setReturnSymbol(String name, String type, int register) {
-        Symbol s = new Symbol(name, type);
-        s.setRegister(register);
+        Symbol s = new Symbol(name, type, register);
         this.returnSymbol = s;
     }
 
-    public boolean addParameter(String name, String type, int register) {
-        Symbol s = new Symbol(name, type);
-        if(this.parameters.add(s)){
-            s.setRegister(register);
-            return true;
-        }
-        else return false;
+    public void addParameter(String name, String type, int register) {
+        Symbol s = new Symbol(name, type, register);
+        this.parameters.put(name, s);
     }
 
-    public boolean addVariable(String name, String type, int register) {
-        Symbol s = new Symbol(name, type);
-        if(this.variables.add(s)){
-            s.setRegister(register);
-            return true;
-        }
-        else return false;
+    public void addVariable(String name, String type, int register) {
+        Symbol s = new Symbol(name, type, register);
+        this.variables.put(name, s);
     }
 
     public String getVariableType (String name){
-        for (Symbol s : this.variables) {
-            if(s.getName().equals(name)){
-                return s.getType();
-            }
-        }
+        Symbol s = this.variables.get(name);
+
+        if (s != null)
+            return s.getType();
 
         return null;
     }

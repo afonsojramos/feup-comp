@@ -112,26 +112,20 @@ public class Proj {
                         if (function.jjtGetChild(j) instanceof ASTElement) {
                             ASTElement element = (ASTElement) function.jjtGetChild(j);
             
-                            if (element.jjtGetNumChildren() == 1) {
-                                functionSymbolTable.setReturnSymbol(element.name, "array", this.registerCounter);
-                                this.registerCounter = this.registerCounter + 1;
-                            } else {
-                                functionSymbolTable.setReturnSymbol(element.name, "int", this.registerCounter);
-                                this.registerCounter = this.registerCounter + 1;
-                            }
+                            if (element.jjtGetNumChildren() == 1)
+                                functionSymbolTable.setReturnSymbol(element.name, "array", this.registerCounter++);
+                            else 
+                                functionSymbolTable.setReturnSymbol(element.name, "int", this.registerCounter++);
                         }
             
                         //Parameters
                         if (function.jjtGetChild(j) instanceof ASTVarlist) {
                             for (int k = 0; k < function.jjtGetChild(j).jjtGetNumChildren(); k++) {
                                 ASTElement element = (ASTElement) function.jjtGetChild(j).jjtGetChild(k);
-                                if (element.jjtGetNumChildren() == 1) {
-                                    if(functionSymbolTable.addParameter(element.name, "array", this.registerCounter))
-                                        this.registerCounter = this.registerCounter + 1;
-                                } else {
-                                    if(functionSymbolTable.addParameter(element.name, "int", this.registerCounter))
-                                        this.registerCounter = this.registerCounter + 1;
-                                }
+                                if (element.jjtGetNumChildren() == 1)
+                                    functionSymbolTable.addParameter(element.name, "array", this.registerCounter++);
+                                else
+                                    functionSymbolTable.addParameter(element.name, "int", this.registerCounter++);
                             }
                         }
             
@@ -139,6 +133,16 @@ public class Proj {
                         if (function.jjtGetChild(j) instanceof ASTAssign || function.jjtGetChild(j) instanceof ASTWhile
                                 || function.jjtGetChild(j) instanceof ASTIf || function.jjtGetChild(j) instanceof ASTElse)
                             saveFunctionVariables(functionSymbolTable, function.jjtGetChild(j));
+
+                        //Accesses
+                        if (function.jjtGetChild(j) instanceof ASTAccess) {
+                            System.out.println("I'M IN BOY!");
+                            ASTElement element = (ASTElement) function.jjtGetChild(j);
+                            
+                            if (functionSymbolTable.getParameters().get(element.name) != null || functionSymbolTable.getVariables().get(element.name) != null){
+                                System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM!");
+                            }                       
+                        }
                     }
                     
                 }
@@ -185,9 +189,8 @@ public class Proj {
                 }
             }
 
-            if(canAddVariable(functionSymbolTable, name, type)){
-                if(functionSymbolTable.addVariable(name, type, this.registerCounter))
-                    this.registerCounter = this.registerCounter + 1;
+            if(canAddVariable(functionSymbolTable, name, type, this.registerCounter)){
+                functionSymbolTable.addVariable(name, type, this.registerCounter++);
             }
                 
 
@@ -203,12 +206,12 @@ public class Proj {
 
     }
 
-    public boolean canAddVariable(SymbolTable functionSymbolTable, String name, String type){
+    public boolean canAddVariable(SymbolTable functionSymbolTable, String name, String type, int registerCounter){
 
-        if (!this.symbolTables.get(this.moduleName).getVariables().contains(new Symbol(name, type))){//verify if the new symbol isn't on the module symbol table already
-            if(!functionSymbolTable.getParameters().contains(new Symbol(name, type))){ //verify if the new symbol isn't on the function's parameters already
+        if (!this.symbolTables.get(this.moduleName).getVariables().containsValue(new Symbol(name, type, registerCounter))){//verify if the new symbol isn't on the module symbol table already
+            if(!functionSymbolTable.getParameters().containsValue(new Symbol(name, type, registerCounter))){ //verify if the new symbol isn't on the function's parameters already
                 if(functionSymbolTable.getReturnSymbol()!=null){ //if the function returns a symbol
-                    if(!functionSymbolTable.getReturnSymbol().equals(new Symbol(name, type))) // if the return symbol isnt't the new one
+                    if(!functionSymbolTable.getReturnSymbol().equals(new Symbol(name, type, registerCounter))) // if the return symbol isnt't the new one
                     return true;
                 }
                 else{
@@ -221,28 +224,54 @@ public class Proj {
     
 
     public void printSymbolTables() {
+
         Iterator it = symbolTables.keySet().iterator();
-        while (it.hasNext()) {
-            String key = (String) it.next();
+        while (it.hasNext()) { 
+            String key = (String) it.next(); 
+            if(key.equals(this.moduleName))
+                System.out.println(" > MODULE: " + key);
+            else System.out.println(" > SCOPE: " + key);
+            
+            for (String parkey : symbolTables.get(key).getParameters().keySet()) {
+                Symbol s = symbolTables.get(key).getParameters().get(parkey);
+                System.out.println("   - Parameter Symbol: " + s.getName() + " - " + s.getType()  + " - " + s.getRegister());
+            }
+
+            for (String varkey : symbolTables.get(key).getVariables().keySet()) {
+                Symbol s = symbolTables.get(key).getVariables().get(varkey);
+                System.out.print("   - Variable Symbol: " + s.getName() + " - " + s.getType());
+                if(s.getRegister()!=-1)
+                    System.out.print(" - " + s.getRegister());
+                System.out.print('\n');
+            }
+
+            if (symbolTables.get(key).getReturnSymbol() != null)
+                System.out.println("   - Return Symbol: " + symbolTables.get(key).getReturnSymbol().getName() + " - "
+                        + symbolTables.get(key).getReturnSymbol().getType()  + " - " + symbolTables.get(key).getReturnSymbol().getRegister());
+        } 
+
+/* //        Iterator it = symbolTables.keySet().iterator();
+//        while (it.hasNext()) { 
+            String key = (String) it.next(); 
             if(key.equals(this.moduleName))
                 System.out.println(" > MODULE: " + key);
             else System.out.println(" > SCOPE: " + key);
 
-            for (Symbol s : symbolTables.get(key).getParameters()) {
-                System.out.println("   - Parameter Symbol: " + s.getName() + " - " + s.getType()  + " - " + s.getRegister());
-            }
-
-            for (Symbol s : symbolTables.get(key).getVariables()) {
-                System.out.print("   - Variable Symbol: " + s.getName() + " - " + s.getType());
-                if(s.getRegister()!=-1)
-                    System.out.print(" - " + s.getRegister());
-
-                System.out.print('\n');
-            }
+//            for (Symbol s : symbolTables.get(key).getParameters()) {
+//                System.out.println("   - Parameter Symbol: " + s.getName() + " - " + s.getType()  + " - " + s.getRegister());
+//            }
+//
+//            for (Symbol s : symbolTables.get(key).getVariables()) {
+//                System.out.print("   - Variable Symbol: " + s.getName() + " - " + s.getType());
+//                if(s.getRegister()!=-1)
+//                    System.out.print(" - " + s.getRegister());
+//
+//                System.out.print('\n');
+//            }
             if (symbolTables.get(key).getReturnSymbol() != null)
                 System.out.println("   - Return Symbol: " + symbolTables.get(key).getReturnSymbol().getName() + " - "
                         + symbolTables.get(key).getReturnSymbol().getType()  + " - " + symbolTables.get(key).getReturnSymbol().getRegister());
-        }
+        }  */
     }
 
     public PrintWriter getFile(){
