@@ -54,12 +54,4 @@ public class SymbolTable {
 
     }
 
-    public String getVariableType (String name){
-        Symbol s = this.variables.get(name);
-
-        if (s != null)
-            return s.getType();
-
-        return null;
-    }
 }
