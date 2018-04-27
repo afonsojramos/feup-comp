@@ -153,7 +153,7 @@ public class Proj {
         if (node instanceof ASTAssign) {
             ASTAssign assign = (ASTAssign) node;
             String name = "";
-            String type = "int";
+			String type = "int";
 
             for (int i = 0; i < assign.jjtGetNumChildren(); i++) {
                 if (assign.jjtGetChild(i) instanceof ASTAccess) {
@@ -184,10 +184,10 @@ public class Proj {
 								for( int k = 0; k < term.jjtGetNumChildren(); k++) {
 
 									if (term.jjtGetChild(k) instanceof ASTAccess) {
-										ASTAccess leftAccess = (ASTAccess) term.jjtGetChild(k);
+										ASTAccess access = (ASTAccess) term.jjtGetChild(k);
 										
-										if (functionSymbolTable.getParameters().get(leftAccess.name) == null && functionSymbolTable.getVariables().get(leftAccess.name) == null && !functionSymbolTable.getReturnSymbol().getName().equals(leftAccess.name)){
-											System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + leftAccess.name);  //Debug
+										if (functionSymbolTable.getParameters().get(access.name) == null && functionSymbolTable.getVariables().get(access.name) == null && !functionSymbolTable.getReturnSymbol().getName().equals(access.name)){
+											System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + access.name);  //Debug
 										}
 									}
 								}
@@ -201,9 +201,45 @@ public class Proj {
                 if(functionSymbolTable.addVariable(name, type, this.registerCounter))
                     this.registerCounter++;
             }
-        }
+		} 
+		
+		else if (node instanceof ASTExprtest) {
+			ASTExprtest exprtest = (ASTExprtest) node;
 
-        else if (node instanceof ASTWhile || node instanceof ASTIf || node instanceof ASTElse) {
+			for (int i = 0; i < exprtest.jjtGetNumChildren(); i++) {
+				if (exprtest.jjtGetChild(i) instanceof ASTAccess) {
+					ASTAccess access = (ASTAccess) exprtest.jjtGetChild(i);
+					
+					if (functionSymbolTable.getParameters().get(access.name) == null && functionSymbolTable.getVariables().get(access.name) == null && !functionSymbolTable.getReturnSymbol().getName().equals(access.name)){
+						System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + access.name);  //Debug
+					}
+				}
+
+				else if (exprtest.jjtGetChild(i) instanceof ASTRhs) {
+					ASTRhs rhs = (ASTRhs) exprtest.jjtGetChild(i);
+
+					for (int j = 0; j < rhs.jjtGetNumChildren(); j++) {
+
+						if (rhs.jjtGetChild(j) instanceof ASTTerm) {
+							ASTTerm term = (ASTTerm) rhs.jjtGetChild(j);
+
+							for( int k = 0; k < term.jjtGetNumChildren(); k++) {
+
+								if (term.jjtGetChild(k) instanceof ASTAccess) {
+									ASTAccess access = (ASTAccess) term.jjtGetChild(k);
+									
+									if (functionSymbolTable.getParameters().get(access.name) == null && functionSymbolTable.getVariables().get(access.name) == null && !functionSymbolTable.getReturnSymbol().getName().equals(access.name)){
+										System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + access.name);  //Debug
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		} 
+		
+		else if (node instanceof ASTWhile || node instanceof ASTIf || node instanceof ASTElse) {
             SimpleNode simpleNode = (SimpleNode) node;
 
             for (int i = 0; i < simpleNode.jjtGetNumChildren(); i++) {
