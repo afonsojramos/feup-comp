@@ -1,0 +1,25 @@
+.class public programa1
+.super java/lang/Object
+
+.field static data [I
+.field static mx I
+.field static mn I
+
+.method public static 
+det([I)V
+  .limit stack 5
+  .limit locals 5
+
+  return
+.end method
+
+.method public static 
+main([Ljava/lang/String;)V
+  .limit stack 0
+  .limit locals 0
+
+  invokestatic programa1/det([I)V
+  invokestatic io/println(Ljava/lang/String;I)V
+  invokestatic io/println(Ljava/lang/String;I)V
+  return
+.end method

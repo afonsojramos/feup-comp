@@ -352,58 +352,133 @@ public class Proj {
 
         String type = this.symbolTables.get(this.moduleName).getVariables().get(element.name).getType();
 
-        if(type.equals("int"))
-            file.println(".field static " + element.name + " I");
-        else if (type.equals("array"))
+        if(type.equals("int")){
+            file.print(".field static " + element.name + " I");
+
+            if(!declaration.integer.equals("")){
+
+                file.print(" = ");
+                if(declaration.operator.equals("-")) file.print("-"); //negative number
+                file.print(declaration.integer);
+            }
+            
+            file.print("\n");
+        }
+            
+        else if (type.equals("array")){
             file.println(".field static " + element.name + " [I");
+        }
+            
     }
 
 
     public void functionToJvm(PrintWriter file, ASTFunction function){
-        file.println("\n.method public static ");
 
         SymbolTable functionTable = this.symbolTables.get(function.name);
-
+        
         //function header
+
+        file.println("\n.method public static ");
         if(function.name.equals("main")){
             file.println("main([Ljava/lang/String;)V");
         }
         else{
-
-            file.print(function.name + "(");
-
-            for (Map.Entry<String, Symbol> entry : functionTable.getParameters().entrySet()) {
-                String type = entry.getValue().getType();
-                
-                if(type.equals("array"))
-                    file.print("[I");
-                else
-                    file.print("I");
-            }
-
-
-            Symbol returnSymbol = functionTable.getReturnSymbol();
-
-            if(returnSymbol != null){
-                if(returnSymbol.getType().equals("int"))
-                    file.print(")I\n");
-                else if (returnSymbol.getType().equals("array"))
-                    file.print(")[I\n");
-                }
-            else 
-                file.println(")V\n");
+            file.println(functionHeader(function.name));
         }
 
         //function limits
 
+        int nrParameters = (new ArrayList(functionTable.getParameters().keySet())).size();
+        int nrVariables = (new ArrayList(functionTable.getVariables().keySet())).size();
+        int nrReturn = functionTable.getReturnSymbol() != null ? 1 : 0;
+
+        int nrLocals = nrParameters + nrVariables + nrReturn;
+        int nrStack = nrLocals; //TODO: alterar para número correto
+
+        file.println("  .limit stack " + nrStack);
+        file.println("  .limit locals " + nrLocals +"\n");
 
 
         //function statements
-
-
-
+        for (int i = 0; i < function.jjtGetNumChildren(); i++) {
+            statementToJvm(file, function.jjtGetChild(i));
+        }
+        
         //function return
 
+        if(functionTable.getReturnSymbol()!= null){
+            if(functionTable.getReturnSymbol().getType()=="int"){
+
+                file.println("  iload " + functionTable.getReturnSymbol().getRegister());
+                file.println("  ireturn");
+
+            }else{ //array
+
+                file.println("  aload " + functionTable.getReturnSymbol().getRegister());
+                file.println("  areturn");
+
+            }
+        }
+        else{ //void
+            file.println("  return"); 
+        }
+
+        file.println(".end method");
+
   
+    }
+
+    public String functionHeader(String functionName){
+
+        SymbolTable functionTable = this.symbolTables.get(functionName);
+
+        String functionHeader = functionName + "(";
+
+        
+        for (Map.Entry<String, Symbol> entry : functionTable.getParameters().entrySet()) {
+            String type = entry.getValue().getType();
+                
+            if(type.equals("array"))
+                functionHeader=functionHeader+"[I";
+            else
+                functionHeader=functionHeader+"I";
+        }
+
+
+        Symbol returnSymbol = functionTable.getReturnSymbol();
+
+        if(returnSymbol != null){
+            if(returnSymbol.getType().equals("int"))
+                functionHeader=functionHeader+")I";
+            else if (returnSymbol.getType().equals("array"))
+                functionHeader=functionHeader+")[I";
+            }
+            else 
+                functionHeader=functionHeader+")V";
+
+         return functionHeader;
+    }
+
+    public void statementToJvm(PrintWriter file, Node node){
+
+        if (node instanceof ASTCall) {
+            ASTCall call = (ASTCall) node;
+
+            if(call.module.equals("")){
+                file.println("  invokestatic " + this.moduleName +"/" + functionHeader(call.function));
+            }
+            else{
+
+                if(call.module.equals("io") && call.function.equals("println")){
+                    if(call.jjtGetChild(0).jjtGetNumChildren()==2)
+                        file.println("  invokestatic io/println(Ljava/lang/String;I)V");  
+                    else
+                        file.println("  invokestatic io/println(Ljava/lang/String)V");  
+                    
+                }
+
+            }   
+        }
+
     }
 }
