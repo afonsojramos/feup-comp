@@ -45,4 +45,14 @@ public class SymbolTable {
         }
         else return false;
     }
+
+    public String getVariableType (String name){
+        for (Symbol s : this.variables) {
+            if(s.getName().equals(name)){
+                return s.getType();
+            }
+        }
+
+        return null;
+    }
 }

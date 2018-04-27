@@ -55,6 +55,7 @@ public class Proj {
             root.dump("");
             buildSymbolTables(root);
             fillFunctionSymbolTables(root);
+            yalToJasmin(root);
             System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_GREEN + " The input was read sucessfully." + ANSI_RESET);
         } catch (ParseException e) {
             System.out
@@ -73,14 +74,17 @@ public class Proj {
             SymbolTable globalSymbolTable = new SymbolTable();
             
             for (int i = 0; i < module.jjtGetNumChildren(); i++) {
+                
+                //declarations
                 if (module.jjtGetChild(i) instanceof ASTDeclaration) {
                     ASTElement element = (ASTElement) module.jjtGetChild(i).jjtGetChild(0);
 
-                    if (root.jjtGetChild(i).jjtGetNumChildren() == 2) {
+                    if (module.jjtGetChild(i).jjtGetNumChildren() == 2) {
                         globalSymbolTable.addVariable(element.name, "array",-1);
                     } else {
                         globalSymbolTable.addVariable(element.name, "int",-1);
                     }
+                //functions
                 } else if (module.jjtGetChild(i) instanceof ASTFunction) {
                     ASTFunction function = (ASTFunction) module.jjtGetChild(i);
 
@@ -239,5 +243,76 @@ public class Proj {
                 System.out.println("   - Return Symbol: " + symbolTables.get(key).getReturnSymbol().getName() + " - "
                         + symbolTables.get(key).getReturnSymbol().getType()  + " - " + symbolTables.get(key).getReturnSymbol().getRegister());
         }
+    }
+
+    public PrintWriter getFile(){
+
+        try {
+            File dir = new File("jvm");
+            if (!dir.exists()) dir.mkdirs();
+
+            File file = new File("jvm/" + this.moduleName + ".jvm");
+            if(!file.exists()) file.createNewFile();
+
+            PrintWriter writer = new PrintWriter(file);
+
+            return writer;
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
+
+
+    public void yalToJasmin(SimpleNode root){
+        
+        
+        PrintWriter file = getFile();
+
+        if (root != null && root instanceof ASTModule) {
+            ASTModule module = (ASTModule) root;
+
+            file.println(".class public " + module.name);
+            file.println(".super java/lang/Object\n");
+
+            for (int i = 0; i < module.jjtGetNumChildren(); i++) {
+
+                //declarations
+                if (module.jjtGetChild(i) instanceof ASTDeclaration) {
+                    ASTElement element = (ASTElement) module.jjtGetChild(i).jjtGetChild(0);
+
+                    String type = this.symbolTables.get(module.name).getVariableType(element.name);
+
+                    if(type.equals("int"))
+                        file.println(".field static " + element.name + " I");
+                    else if (type.equals("array"))
+                        file.println(".field static " + element.name + " [I");
+
+
+                //functions
+                } else if (module.jjtGetChild(i) instanceof ASTFunction) {
+                    ASTFunction function = (ASTFunction) module.jjtGetChild(i);
+
+                    file.println("\n.method public static " + function.name);
+
+                    Symbol returnSymbol = this.symbolTables.get(function.name).getReturnSymbol();
+
+                    if(returnSymbol != null){
+                        if(returnSymbol.getType().equals("int"))
+                            file.println(function.name + "([Ljava/lang/String;)I");
+                        else if (returnSymbol.getType().equals("array"))
+                            file.println(function.name + "([Ljava/lang/String;)[I");
+                    }
+                    else 
+                        file.println(function.name + "([Ljava/lang/String;)V");
+                    
+                }
+            }
+
+        }
+
+        file.close();
     }
 }
