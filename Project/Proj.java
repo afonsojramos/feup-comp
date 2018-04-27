@@ -104,6 +104,8 @@ public class Proj {
                     ASTFunction function = (ASTFunction) module.jjtGetChild(i);
                     SymbolTable functionSymbolTable = this.symbolTables.get(function.name);
 
+                    System.out.println("FUNCTION - > " + function.name);  //Debug
+
                     this.registerCounter = 0;
 
                     for (int j = 0; j < function.jjtGetNumChildren(); j++) {
@@ -133,21 +135,11 @@ public class Proj {
                                     
                             }
                         }
-            
+
                         //Variables
                         if (function.jjtGetChild(j) instanceof ASTAssign || function.jjtGetChild(j) instanceof ASTWhile
-                                || function.jjtGetChild(j) instanceof ASTIf || function.jjtGetChild(j) instanceof ASTElse)
-                            saveFunctionVariables(functionSymbolTable, function.jjtGetChild(j));
-
-                        //Accesses
-                        if (function.jjtGetChild(j) instanceof ASTAccess) {
-                            System.out.println("I'M IN BOY!");
-                            ASTElement element = (ASTElement) function.jjtGetChild(j);
-                            
-                            if (functionSymbolTable.getParameters().get(element.name) != null || functionSymbolTable.getVariables().get(element.name) != null){
-                                System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM!");
-                            }                       
-                        }
+                            || function.jjtGetChild(j) instanceof ASTIf || function.jjtGetChild(j) instanceof ASTElse)
+                                saveFunctionVariables(functionSymbolTable, function.jjtGetChild(j));
                     }
                     
                 }
@@ -166,7 +158,7 @@ public class Proj {
             for (int i = 0; i < assign.jjtGetNumChildren(); i++) {
                 if (assign.jjtGetChild(i) instanceof ASTAccess) {
                     ASTAccess access = (ASTAccess) assign.jjtGetChild(i);
-                    name = access.name;
+					name = access.name;
                 }
 
                 else if (assign.jjtGetChild(i) instanceof ASTRhs) {
@@ -180,7 +172,7 @@ public class Proj {
                         if (rhs.jjtGetChild(j) instanceof ASTTerm) {
                             ASTTerm term = (ASTTerm) rhs.jjtGetChild(j);
 
-                            if(term.jjtGetNumChildren()>0 && term.jjtGetChild(0) instanceof ASTCall){
+                            if(term.jjtGetNumChildren() > 0 && term.jjtGetChild(0) instanceof ASTCall) {
                                 ASTCall call = (ASTCall) term.jjtGetChild(0);
                                 String functionName = call.function;
                                 String functionModule = call.module;
@@ -188,7 +180,18 @@ public class Proj {
                                 if(functionModule.equals("")) //if the functions belongs to this module
                                     type=symbolTables.get(functionName).getReturnSymbol().getType(); //gets that function return type
                                 else type = "int"; //otherwise it's int
-                            }
+                            } else {
+								for( int k = 0; k < term.jjtGetNumChildren(); k++) {
+
+									if (term.jjtGetChild(k) instanceof ASTAccess) {
+										ASTAccess leftAccess = (ASTAccess) term.jjtGetChild(k);
+										
+										if (functionSymbolTable.getParameters().get(leftAccess.name) == null && functionSymbolTable.getVariables().get(leftAccess.name) == null && !functionSymbolTable.getReturnSymbol().getName().equals(leftAccess.name)){
+											System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + leftAccess.name);  //Debug
+										}
+									}
+								}
+							}
                         }
                     }
                 }
@@ -198,8 +201,6 @@ public class Proj {
                 if(functionSymbolTable.addVariable(name, type, this.registerCounter))
                     this.registerCounter++;
             }
-                
-
         }
 
         else if (node instanceof ASTWhile || node instanceof ASTIf || node instanceof ASTElse) {
