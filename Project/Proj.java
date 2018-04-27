@@ -249,29 +249,6 @@ public class Proj {
                 System.out.println("   - Return Symbol: " + symbolTables.get(key).getReturnSymbol().getName() + " - "
                         + symbolTables.get(key).getReturnSymbol().getType()  + " - " + symbolTables.get(key).getReturnSymbol().getRegister());
         } 
-
-/* //        Iterator it = symbolTables.keySet().iterator();
-//        while (it.hasNext()) { 
-            String key = (String) it.next(); 
-            if(key.equals(this.moduleName))
-                System.out.println(" > MODULE: " + key);
-            else System.out.println(" > SCOPE: " + key);
-
-//            for (Symbol s : symbolTables.get(key).getParameters()) {
-//                System.out.println("   - Parameter Symbol: " + s.getName() + " - " + s.getType()  + " - " + s.getRegister());
-//            }
-//
-//            for (Symbol s : symbolTables.get(key).getVariables()) {
-//                System.out.print("   - Variable Symbol: " + s.getName() + " - " + s.getType());
-//                if(s.getRegister()!=-1)
-//                    System.out.print(" - " + s.getRegister());
-//
-//                System.out.print('\n');
-//            }
-            if (symbolTables.get(key).getReturnSymbol() != null)
-                System.out.println("   - Return Symbol: " + symbolTables.get(key).getReturnSymbol().getName() + " - "
-                        + symbolTables.get(key).getReturnSymbol().getType()  + " - " + symbolTables.get(key).getReturnSymbol().getRegister());
-        }  */
     }
 
     public PrintWriter getFile(){
