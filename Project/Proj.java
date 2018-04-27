@@ -325,21 +325,48 @@ public class Proj {
     public void functionToJvm(PrintWriter file, ASTFunction function){
         file.println("\n.method public static ");
 
+        SymbolTable functionTable = this.symbolTables.get(function.name);
+
+        //function header
         if(function.name.equals("main")){
             file.println("main([Ljava/lang/String;)V");
         }
         else{
-            Symbol returnSymbol = this.symbolTables.get(function.name).getReturnSymbol();
+
+            file.print(function.name + "(");
+
+            for (Map.Entry<String, Symbol> entry : functionTable.getParameters().entrySet()) {
+                String type = entry.getValue().getType();
+                
+                if(type.equals("array"))
+                    file.print("[I");
+                else
+                    file.print("I");
+            }
+
+
+            Symbol returnSymbol = functionTable.getReturnSymbol();
 
             if(returnSymbol != null){
                 if(returnSymbol.getType().equals("int"))
-                    file.println(function.name + "()I");
+                    file.print(")I\n");
                 else if (returnSymbol.getType().equals("array"))
-                    file.println(function.name + "()[I");
+                    file.print(")[I\n");
                 }
             else 
-                file.println(function.name + "()V");
+                file.println(")V\n");
         }
+
+        //function limits
+
+
+
+        //function statements
+
+
+
+        //function return
+
   
     }
 }
