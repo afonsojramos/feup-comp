@@ -1,5 +1,5 @@
 public class Symbol {
-    private String name;
+    private String name = null;
     private String type;
     private int register; //if it is -1, means it's a global variable
 
