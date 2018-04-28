@@ -3,6 +3,7 @@
 public
 class ASTArgument extends SimpleNode {
   public String name = "";
+  public String type = "";
   public ASTArgument(int id) {
     super(id);
   }

@@ -286,9 +286,9 @@ void ArgumentList() : {}
 //Argument ::= ( <ID> | <STRING> | <INTEGER> )
 void Argument() : {Token s;} 
 {
-    (s=<ID> {jjtThis.name = s.image;} |
-    s=<STRING> {jjtThis.name = s.image;} | 
-    s=<INTEGER> {jjtThis.name = s.image;})
+    (s=<ID> {jjtThis.name = s.image; jjtThis.type = "ID";} |
+    s=<STRING> {jjtThis.name = s.image; jjtThis.type = "String";} | 
+    s=<INTEGER> {jjtThis.name = s.image; jjtThis.type = "Integer";})
 }
 
 //ArrayAccess ::= <ID> "[" Index "]"
