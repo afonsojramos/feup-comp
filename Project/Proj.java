@@ -467,7 +467,7 @@ public class Proj {
 
     public void statementToJvm(PrintWriter file, SymbolTable functionTable, Node node){
 
-        if (node instanceof ASTAssign) {
+        if (node instanceof ASTAssign) { //ASSIGNS
             ASTAssign assign = (ASTAssign) node;
 
             if(assign.jjtGetNumChildren()==2){
@@ -482,43 +482,39 @@ public class Proj {
 
                             ASTTerm term = (ASTTerm) rhs.jjtGetChild(0);
 
-                            if(term.jjtGetNumChildren()==0 && term.integer!=""){
+                            if(term.jjtGetNumChildren()==0 && term.integer!=""){ //eg.: i = 0
 
-                                int number =  Integer.parseInt(term.integer);
+                                printNumberLoad(file, term.integer, term.operator);
+                                printVariableStore(file, functionTable,access.name);
 
-                                if(number < 6)
-                                    file.println("  iconst_"+number);
-                                else
-                                    file.println("  bipush " + number);
+                            }
+
+                            if(term.jjtGetNumChildren()==1){
+                                if(term.jjtGetChild(0) instanceof ASTAccess){ //eg.: i=b.size
+
+                                    ASTAccess termAccess = (ASTAccess) term.jjtGetChild(0);
 
 
-                                Symbol variable = functionTable.getFromAll(access.name);
 
-                                if(variable != null){
-                                    file.println("  istore " + variable.getRegister() );
+
+
                                 }
-                                else{
-                                    //TODO: Global variable
+                                else if(term.jjtGetChild(0) instanceof ASTCall){ //eg.: a=f1(b)
+                                    statementToJvm(file, functionTable, term.jjtGetChild(0));
+                                    printVariableStore(file, functionTable,access.name);
                                 }
 
 
                             }
 
-                            if(term.jjtGetNumChildren()==1 && term.jjtGetChild(0) instanceof ASTAccess){
-
-                                ASTAccess termAccess = (ASTAccess) term.jjtGetChild(0);
-
-                                //i=b.size
-
-
-                            }
-
-                        }
-                        else if(rhs.jjtGetChild(0) instanceof ASTArraySize){
+                        }else if(rhs.jjtGetChild(0) instanceof ASTArraySize){ //eg.: a=[N]
 
                             ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(0);
 
-                            //a=[N]
+
+
+
+
 
 
                         }
@@ -551,6 +547,31 @@ public class Proj {
 
     }
 
+    public void printVariableStore(PrintWriter file, SymbolTable functionTable, String name){
+
+        Symbol variable = functionTable.getFromAll(name);
+        if(variable != null){ //Local Variables
+            file.println("  istore " + variable.getRegister() );
+        }
+        else{ //Global variable             
+            Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
+            String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
+            file.println("  putstatic " + this.moduleName + "/" + globalVariable.getName() + globalVariableType);
+
+        }
+    }
+
+    public void printNumberLoad(PrintWriter file, String numberString, String operator){
+
+        int number =  Integer.parseInt(numberString);
+        if(operator.equals("-")) number = number * -1; //Negative number
+
+        if(number >= 0 && number <= 5)
+            file.println("  iconst_"+number);
+        else
+            file.println("  bipush " + number);
+
+    }
     public void semanticAnalysis(SimpleNode root){
         if (root != null && root instanceof ASTModule) {
 
