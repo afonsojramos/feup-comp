@@ -54,4 +54,15 @@ public class SymbolTable {
 
     }
 
+    public Symbol getFromAll(String name){
+
+        if(this.returnSymbol!= null && name.equals(this.returnSymbol.getName()))
+            return this.returnSymbol;
+        else if(this.variables.get(name) != null)
+            return this.variables.get(name);
+        else if(this.parameters.get(name) != null)
+            return this.parameters.get(name);
+        else return null;
+    }
+
 }

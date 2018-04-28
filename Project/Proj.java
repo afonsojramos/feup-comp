@@ -401,7 +401,7 @@ public class Proj {
 
         //function statements
         for (int i = 0; i < function.jjtGetNumChildren(); i++) {
-            statementToJvm(file, function.jjtGetChild(i));
+            statementToJvm(file, functionTable, function.jjtGetChild(i));
         }
         
         //function return
@@ -409,18 +409,18 @@ public class Proj {
         if(functionTable.getReturnSymbol()!= null){
             if(functionTable.getReturnSymbol().getType()=="int"){
 
-                file.println("  iload " + functionTable.getReturnSymbol().getRegister());
+                file.println("\n  iload " + functionTable.getReturnSymbol().getRegister());
                 file.println("  ireturn");
 
             }else{ //array
 
-                file.println("  aload " + functionTable.getReturnSymbol().getRegister());
+                file.println("\n  aload " + functionTable.getReturnSymbol().getRegister());
                 file.println("  areturn");
 
             }
         }
         else{ //void
-            file.println("  return"); 
+            file.println("\n  return"); 
         }
 
         file.println(".end method");
@@ -459,9 +459,72 @@ public class Proj {
          return functionHeader;
     }
 
-    public void statementToJvm(PrintWriter file, Node node){
+    public void statementToJvm(PrintWriter file, SymbolTable functionTable, Node node){
 
-        if (node instanceof ASTCall) {
+        if (node instanceof ASTAssign) {
+            ASTAssign assign = (ASTAssign) node;
+
+            if(assign.jjtGetNumChildren()==2){
+
+                if(assign.jjtGetChild(0) instanceof ASTAccess && assign.jjtGetChild(1) instanceof ASTRhs){
+                    ASTAccess access = (ASTAccess) assign.jjtGetChild(0);
+                    ASTRhs rhs = (ASTRhs) assign.jjtGetChild(1);
+
+                    if(rhs.jjtGetNumChildren()==1 ){
+
+                        if(rhs.jjtGetChild(0) instanceof ASTTerm){
+                            
+                            ASTTerm term = (ASTTerm) rhs.jjtGetChild(0);
+
+                            if(term.jjtGetNumChildren()==0 && term.integer!=""){
+                                
+                                int number =  Integer.parseInt(term.integer);
+
+                                if(number < 6)
+                                    file.println("  iconst_"+number);
+                                else
+                                    file.println("  bipush " + number);
+                                
+
+                                Symbol variable = functionTable.getFromAll(access.name);
+
+                                if(variable != null){
+                                    file.println("  istore " + variable.getRegister() );
+                                }
+                                else{
+                                    //TODO: Global variable
+                                }
+
+                                
+                            }
+
+                            if(term.jjtGetNumChildren()==1 && term.jjtGetChild(0) instanceof ASTAccess){
+                                
+                                ASTAccess termAccess = (ASTAccess) term.jjtGetChild(0);
+
+                                //i=b.size
+                               
+
+                            }
+
+                        }
+                        else if(rhs.jjtGetChild(0) instanceof ASTArraySize){
+                            
+                            ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(0);
+                            
+                             //a=[N]
+
+
+                        }
+
+                    }
+                    
+                }
+
+            }
+
+        
+        }else if (node instanceof ASTCall) {
             ASTCall call = (ASTCall) node;
 
             if(call.module.equals("")){
