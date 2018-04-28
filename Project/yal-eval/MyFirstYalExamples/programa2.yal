@@ -6,7 +6,8 @@ function a[]=f1(b[]) {
 		 a = [N];
 		 while(i<b.size) {
 		 	a[i] = b[i];
-		 	i = i +1;
+		 	i = i + 1;
+			i = a * 2;
 		 }
 }
 

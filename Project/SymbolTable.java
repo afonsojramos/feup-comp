@@ -29,10 +29,9 @@ public class SymbolTable {
 
     public boolean addParameter(String name, String type, int register) {
 
-        if(this.parameters.containsKey(name)){
+        if (this.parameters.containsKey(name)) {
             return false;
-        }
-        else{
+        } else {
             Symbol s = new Symbol(name, type, register);
             this.parameters.put(name, s);
             return true;
@@ -42,10 +41,9 @@ public class SymbolTable {
 
     public boolean addVariable(String name, String type, int register) {
 
-        if(this.variables.containsKey(name)){
+        if (this.variables.containsKey(name)) {
             return false;
-        }
-        else{
+        } else {
             Symbol s = new Symbol(name, type, register);
             this.variables.put(name, s);
             return true;
@@ -53,15 +51,16 @@ public class SymbolTable {
 
     }
 
-    public Symbol getFromAll(String name){
+    public Symbol getFromAll(String name) {
 
-        if(this.returnSymbol!= null && name.equals(this.returnSymbol.getName()))
+        if (this.returnSymbol != null && name.equals(this.returnSymbol.getName()))
             return this.returnSymbol;
-        else if(this.variables.get(name) != null)
+        else if (this.variables.get(name) != null)
             return this.variables.get(name);
-        else if(this.parameters.get(name) != null)
+        else if (this.parameters.get(name) != null)
             return this.parameters.get(name);
-        else return null;
+        else
+            return null;
     }
 
     public String getAcessType(String name) {
@@ -72,7 +71,6 @@ public class SymbolTable {
             }
         }
 
-
         if (variables.containsKey(name)) {
             return variables.get(name).getType();
         }
@@ -80,7 +78,6 @@ public class SymbolTable {
         if (parameters.containsKey(name)) {
             return parameters.get(name).getType();
         }
-
 
         return "";
     }

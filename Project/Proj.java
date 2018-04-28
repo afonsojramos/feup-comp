@@ -55,7 +55,7 @@ public class Proj {
             root.dump("");
             buildSymbolTables(root);
             fillFunctionSymbolTables(root);
-            semanticAnalysis(root);
+            //semanticAnalysis(root);
             yalToJasmin(root);
             System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_GREEN + " The input was read sucessfully." + ANSI_RESET);
         } catch (ParseException e) {
@@ -150,7 +150,7 @@ public class Proj {
                 }
             }
         }
-        printSymbolTables();
+        //printSymbolTables();
     }
 
     public void saveFunctionVariables(SymbolTable functionSymbolTable, Node node) {
@@ -515,45 +515,12 @@ public class Proj {
                     ASTRhs rhs = (ASTRhs) assign.jjtGetChild(1);
 
                     if (access.jjtGetNumChildren() == 0) { //just ints and entire arrays, no array accesses
-
                         if (rhs.jjtGetNumChildren() == 1) { //just simple assigns, no operations
-
-                            if (rhs.jjtGetChild(0) instanceof ASTTerm) {
-
-                                ASTTerm term = (ASTTerm) rhs.jjtGetChild(0);
-
-                                if (term.jjtGetNumChildren() == 0 && term.integer != "") { //eg.: a = 0
-
-                                    printNumberLoad(file, term.integer, term.operator);
-                                    printVariableStore(file, functionTable, access.name);
-
-                                    //TODO: array (se a for array)
-
-                                }
-
-                                if (term.jjtGetNumChildren() == 1) {
-                                    if (term.jjtGetChild(0) instanceof ASTAccess) { //eg.: i=b.size
-
-                                        ASTAccess termAccess = (ASTAccess) term.jjtGetChild(0);
-
-                                        //TODO: array
-
-                                    } else if (term.jjtGetChild(0) instanceof ASTCall) { //eg.: a=f1(b)
-                                        statementToJvm(file, functionTable, term.jjtGetChild(0));
-                                        printVariableStore(file, functionTable, access.name);
-
-                                        //TODO: array (se a for array)
-                                    }
-
-                                }
-
-                            } else if (rhs.jjtGetChild(0) instanceof ASTArraySize) { //eg.: a=[N]
-
-                                ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(0);
-
-                                //TODO:array
-                            }
-
+                            simpleAssign(file, functionTable, access.name, rhs);
+                        } else if (rhs.jjtGetNumChildren() == 2) { //operations
+                            String term1 = getTerm((ASTTerm) rhs.jjtGetChild(0));
+                            String term2 = getTerm((ASTTerm) rhs.jjtGetChild(1));
+                            printOperation(file, functionTable, access.name, rhs.operator, term1, term2);
                         }
 
                         //assign of array accesses
@@ -565,7 +532,6 @@ public class Proj {
                     }
 
                 }
-
             }
 
         } else if (node instanceof ASTCall) { //CALLS
@@ -584,8 +550,137 @@ public class Proj {
                 }
 
             }
-        }
+        } else if (node instanceof ASTWhile) { // WHILE
+            for (int i = 1; i < node.jjtGetNumChildren(); i++) { //TODO: comecar em 0 e analidar o expression
+                statementToJvm(file, functionTable, node.jjtGetChild(i));
+            }
 
+        } else if (node instanceof ASTExprtest) {
+            statementToJvm(file, functionTable, node.jjtGetChild(0));
+        }
+    }
+
+    public void printOperation(PrintWriter file, SymbolTable functionTable, String accessName, String operator,
+            String term1, String term2) {
+        String regex = "\\d+";
+        if ((accessName.equals(term1) || accessName.equals(term2)) && (term1.matches(regex) || term2.matches(regex))
+                && (operator.equals("+") || operator.equals("-"))) {
+
+            if (operator.equals("+"))
+                operator = " ";
+            else
+                operator = " -";
+
+            if (term2.matches(regex)) { // iinc term1 term2
+                Symbol variable = functionTable.getFromAll(term1);
+                file.println("  iinc " + variable.getRegister() + operator + term2);
+            } else if (term1.matches(regex)) { // iinc term2 term1
+                Symbol variable = functionTable.getFromAll(term2);
+                file.println("  iinc " + variable.getRegister() + operator + term1);
+            }
+        } else {
+            printLoad(file, functionTable, term1);
+            printLoad(file, functionTable, term2);
+
+            switch (operator) {
+            case "+":
+                file.println("  iadd");
+                break;
+            case "-":
+                file.println("  isub");
+                break;
+            case "*":
+                file.println("  imul");
+                break;
+            case "/":
+                file.println("  idiv");
+                break;
+            default:
+                break;
+            }
+
+            printStore(file, functionTable, accessName);
+        }
+    }
+
+    public void printLoad(PrintWriter file, SymbolTable functionTable, String term) {
+        Symbol variable = functionTable.getFromAll(term);
+
+        if (variable == null)
+            file.println("  iload " + term);
+        else
+            file.println("  iload_" + variable.getRegister());
+
+        //TODO: aload, iaload (arrays)
+    }
+
+    public void printStore(PrintWriter file, SymbolTable functionTable, String access) {
+        Symbol variable = functionTable.getFromAll(access);
+        if (variable == null)
+            file.println("  istore_" + access);
+        else
+            file.println("  istore_" + variable.getRegister());
+
+        //TODO: astore, iastore (arrays)
+    }
+
+    public String getTerm(ASTTerm term) {
+        if (term.jjtGetNumChildren() == 0 && term.integer != "") { // term is a number
+            return term.integer;
+        } else if (term.jjtGetNumChildren() == 1) {
+            if (term.jjtGetChild(0) instanceof ASTAccess) { // term is a variable
+
+                ASTAccess termAccess = (ASTAccess) term.jjtGetChild(0);
+                return termAccess.name;
+
+                //TODO: array
+
+            } else if (term.jjtGetChild(0) instanceof ASTCall) { // term is a call
+                //statementToJvm(file, functionTable, term.jjtGetChild(0));
+                //printVariableStore(file, functionTable, accessName);
+
+                //TODO: array (se a for array)
+            }
+        }
+        return "";
+    }
+
+    public void simpleAssign(PrintWriter file, SymbolTable functionTable, String accessName, ASTRhs rhs) {
+        if (rhs.jjtGetChild(0) instanceof ASTTerm) {
+
+            ASTTerm term = (ASTTerm) rhs.jjtGetChild(0);
+
+            if (term.jjtGetNumChildren() == 0 && term.integer != "") { //eg.: a = 0
+
+                printNumberLoad(file, term.integer, term.operator);
+                printVariableStore(file, functionTable, accessName);
+
+                //TODO: array (se a for array)
+
+            }
+
+            if (term.jjtGetNumChildren() == 1) {
+                if (term.jjtGetChild(0) instanceof ASTAccess) { //eg.: i=b.size
+
+                    ASTAccess termAccess = (ASTAccess) term.jjtGetChild(0);
+
+                    //TODO: array
+
+                } else if (term.jjtGetChild(0) instanceof ASTCall) { //eg.: a=f1(b)
+                    statementToJvm(file, functionTable, term.jjtGetChild(0));
+                    printVariableStore(file, functionTable, accessName);
+
+                    //TODO: array (se a for array)
+                }
+
+            }
+
+        } else if (rhs.jjtGetChild(0) instanceof ASTArraySize) { //eg.: a=[N]
+
+            ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(0);
+
+            //TODO:array
+        }
     }
 
     public void printVariableStore(PrintWriter file, SymbolTable functionTable, String name) {

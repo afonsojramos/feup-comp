@@ -21,12 +21,12 @@ public class Symbol {
         return this.register;
     }
 
-    public boolean equals(Object symbol){
+    public boolean equals(Object symbol) {
         Symbol s = (Symbol) symbol;
         return this.name.equals(s.getName());
     }
 
-    public int hashCode(){
+    public int hashCode() {
         return name.hashCode();
     }
 }
