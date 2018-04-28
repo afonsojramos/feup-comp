@@ -211,7 +211,7 @@ void ArraySize() : {Token s1,s2;}
 void Term() : {Token s1, s2;} 
 {
     ( s1=<ADDSUB_OP> {jjtThis.operator = s1.image;}  )? 
-    ( s2=<INTEGER> {jjtThis.operator = s2.image;}  | 
+    ( s2=<INTEGER> {jjtThis.integer = s2.image;}  | 
     LOOKAHEAD(3) Call() | Access() )
 }
 
@@ -300,7 +300,7 @@ void ArrayAccess() : {}
 //ScalarAccess ::= <ID> ( "." <SIZE> )?
 void ScalarAccess() #void : {} 
 {
-    ( "." <SIZE> )?
+    ( "." <SIZE>  #SizeAccess)?
 }
 
 void Access() : {Token s;}

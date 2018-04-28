@@ -4,8 +4,13 @@
 
 .method public static 
 f1([I)[I
-  .limit stack 4
-  .limit locals 4
+  .limit stack 5
+  .limit locals 5
+
+  iconst_0
+  istore 2
+  bipush 10
+  istore 3
 
   aload 0
   areturn
@@ -16,6 +21,9 @@ f2(I)[I
   .limit stack 2
   .limit locals 2
 
+  iconst_1
+  istore 0
+
   aload 0
   areturn
 .end method
@@ -25,9 +33,14 @@ main([Ljava/lang/String;)V
   .limit stack 4
   .limit locals 4
 
+  iconst_1
+  istore 0
+  iconst_2
+  istore 0
   invokestatic io/println(Ljava/lang/String;I)V
   invokestatic io/println(Ljava/lang/String;I)V
   invokestatic io/println(Ljava/lang/String;I)V
   invokestatic io/println(Ljava/lang/String;I)V
+
   return
 .end method
