@@ -196,7 +196,7 @@ void Rhs() : {Token s;}
 {
     ( Term() ( ( 
         s=<ARITH_OP> {jjtThis.operator = s.image;}  | 
-        s= <BITWISE_OP> {jjtThis.operator = s.image;} | 
+        s=<BITWISE_OP> {jjtThis.operator = s.image;} | 
         s=<ADDSUB_OP> {jjtThis.operator = s.image;} ) 
         Term() )? ) | "[" ArraySize() "]" 
 } 
@@ -204,7 +204,7 @@ void Rhs() : {Token s;}
 //ArraySize ::= ScalarAccess | <INTEGER>
 void ArraySize() : {Token s1,s2;} 
 {
-    (s1=<ID> {jjtThis.name = s1.image;}ScalarAccess()) | s2=<INTEGER> {jjtThis.value = s2.image;}
+    (s1=<ID> {jjtThis.name = s1.image;} ScalarAccess()) | s2=<INTEGER> {jjtThis.value = s2.image;}
 }
 
 //Term ::= ( <ADDSUB_OP> )? ( <INTEGER> | Call | ArrayAccess | ScalarAccess )
