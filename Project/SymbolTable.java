@@ -37,7 +37,7 @@ public class SymbolTable {
             this.parameters.put(name, s);
             return true;
         }
-       
+
     }
 
     public boolean addVariable(String name, String type, int register) {
@@ -53,25 +53,35 @@ public class SymbolTable {
 
     }
 
-    public String getAcessType(String name){
+    public Symbol getFromAll(String name){
 
-        if(returnSymbol != null){
-            if(returnSymbol.getName().equals(name)){
+        if(this.returnSymbol!= null && name.equals(this.returnSymbol.getName()))
+            return this.returnSymbol;
+        else if(this.variables.get(name) != null)
+            return this.variables.get(name);
+        else if(this.parameters.get(name) != null)
+            return this.parameters.get(name);
+        else return null;
+    }
+
+    public String getAcessType(String name) {
+
+        if (returnSymbol != null) {
+            if (returnSymbol.getName().equals(name)) {
                 return returnSymbol.getType();
             }
         }
 
 
-        if(variables.containsKey(name)){
+        if (variables.containsKey(name)) {
             return variables.get(name).getType();
         }
 
-        if(parameters.containsKey(name)){
+        if (parameters.containsKey(name)) {
             return parameters.get(name).getType();
         }
 
 
         return "";
     }
-
 }
