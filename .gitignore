@@ -10,3 +10,5 @@ SimpleCharStream.java
 Node.java
 JJTyal2jvmState.java
 *.jvm
+.idea/*
+*.iml

@@ -50,8 +50,28 @@ public class SymbolTable {
             this.variables.put(name, s);
             return true;
         }
-       
 
+    }
+
+    public String getAcessType(String name){
+
+        if(returnSymbol != null){
+            if(returnSymbol.getName().equals(name)){
+                return returnSymbol.getType();
+            }
+        }
+
+
+        if(variables.containsKey(name)){
+            return variables.get(name).getType();
+        }
+
+        if(parameters.containsKey(name)){
+            return parameters.get(name).getType();
+        }
+
+
+        return "";
     }
 
 }
