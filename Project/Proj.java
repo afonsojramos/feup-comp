@@ -429,7 +429,7 @@ public class Proj {
             file.println("\n  return");
         }
 
-        file.println(".end method");
+        file.println(".end method\n");
 
 
     }
@@ -476,57 +476,65 @@ public class Proj {
                     ASTAccess access = (ASTAccess) assign.jjtGetChild(0);
                     ASTRhs rhs = (ASTRhs) assign.jjtGetChild(1);
 
-                    if(rhs.jjtGetNumChildren()==1 ){
+                    if(access.jjtGetNumChildren() == 0){ //just ints and entire arrays, no array accesses
 
-                        if(rhs.jjtGetChild(0) instanceof ASTTerm){
+                        if(rhs.jjtGetNumChildren()==1 ){ //just simple assigns, no operations
 
-                            ASTTerm term = (ASTTerm) rhs.jjtGetChild(0);
-
-                            if(term.jjtGetNumChildren()==0 && term.integer!=""){ //eg.: i = 0
-
-                                printNumberLoad(file, term.integer, term.operator);
-                                printVariableStore(file, functionTable,access.name);
-
-                            }
-
-                            if(term.jjtGetNumChildren()==1){
-                                if(term.jjtGetChild(0) instanceof ASTAccess){ //eg.: i=b.size
-
-                                    ASTAccess termAccess = (ASTAccess) term.jjtGetChild(0);
-
-
-
-
-
-                                }
-                                else if(term.jjtGetChild(0) instanceof ASTCall){ //eg.: a=f1(b)
-                                    statementToJvm(file, functionTable, term.jjtGetChild(0));
+                            if(rhs.jjtGetChild(0) instanceof ASTTerm){
+                                
+                                ASTTerm term = (ASTTerm) rhs.jjtGetChild(0);
+    
+                                if(term.jjtGetNumChildren()==0 && term.integer!=""){ //eg.: a = 0
+    
+                                    printNumberLoad(file, term.integer, term.operator);
                                     printVariableStore(file, functionTable,access.name);
+
+                                    //TODO: array (se a for array)
+                                                                    
                                 }
+    
+                                if(term.jjtGetNumChildren()==1){
+                                    if(term.jjtGetChild(0) instanceof ASTAccess){ //eg.: i=b.size
+                                    
+                                        ASTAccess termAccess = (ASTAccess) term.jjtGetChild(0);
+                                        
+                                        //TODO: array
 
+                                        
+                                    }
+                                    else if(term.jjtGetChild(0) instanceof ASTCall){ //eg.: a=f1(b)
+                                        statementToJvm(file, functionTable, term.jjtGetChild(0));
+                                        printVariableStore(file, functionTable,access.name);
 
+                                         //TODO: array (se a for array)
+                                    }
+                                   
+    
+                                }
+    
+                            }else if(rhs.jjtGetChild(0) instanceof ASTArraySize){ //eg.: a=[N]
+                                
+                                ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(0);
+                                
+                                //TODO:array
                             }
-
-                        }else if(rhs.jjtGetChild(0) instanceof ASTArraySize){ //eg.: a=[N]
-
-                            ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(0);
-
-
-
-
-
-
-
+    
                         }
 
+                    //assign of array accesses
+                    } else if(access.jjtGetNumChildren() == 1 && access.jjtGetChild(0) instanceof ASTArrayAccess){ //eg.:a[i]=10 / a[4]=10
+
+                        ASTArrayAccess arrayAccess = (ASTArrayAccess) access.jjtGetChild(0);
+
+                        //TODO:array       
                     }
 
                 }
 
             }
 
-
-        }else if (node instanceof ASTCall) {
+        
+        }else if (node instanceof ASTCall) { //CALLS
             ASTCall call = (ASTCall) node;
 
             if(call.module.equals("")){
@@ -551,11 +559,13 @@ public class Proj {
 
         Symbol variable = functionTable.getFromAll(name);
         if(variable != null){ //Local Variables
-            file.println("  istore " + variable.getRegister() );
+            file.println("  istore " + variable.getRegister());
+            
         }
         else{ //Global variable             
             Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
             String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
+
             file.println("  putstatic " + this.moduleName + "/" + globalVariable.getName() + globalVariableType);
 
         }
