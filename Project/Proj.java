@@ -169,8 +169,9 @@ public class Proj {
                             ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(j);
                             type = "array";
 
-                            if (functionSymbolTable.getParameters().get(arraySize.value) == null && functionSymbolTable.getVariables().get(arraySize.value) == null && !functionSymbolTable.getReturnSymbol().getName().equals(arraySize.name))
-                                System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + arraySize.name);  //Debug
+                            if (arraySize.value.isEmpty())
+                                if (functionSymbolTable.getParameters().get(arraySize.name) == null && functionSymbolTable.getVariables().get(arraySize.name) == null && !functionSymbolTable.getReturnSymbol().getName().equals(arraySize.name))
+                                    System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Name: " + arraySize.name);  //Debug
                         }
 
                         if (rhs.jjtGetChild(j) instanceof ASTTerm) {
