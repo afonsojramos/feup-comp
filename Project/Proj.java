@@ -140,6 +140,10 @@ public class Proj {
                         if (function.jjtGetChild(j) instanceof ASTAssign || function.jjtGetChild(j) instanceof ASTWhile
                             || function.jjtGetChild(j) instanceof ASTIf || function.jjtGetChild(j) instanceof ASTElse)
                                 saveFunctionVariables(functionSymbolTable, function.jjtGetChild(j));
+
+                        //Additional Semantic Analysis
+                        if (function.jjtGetChild(j) instanceof ASTCall)
+                            argumentsAnalysis(functionSymbolTable, function.jjtGetChild(j));
                     }
                     
                 }
@@ -252,6 +256,31 @@ public class Proj {
             }
         }
 
+    }
+
+    public void argumentsAnalysis(SymbolTable functionSymbolTable, Node node){
+        
+        if (node instanceof ASTCall){
+            ASTCall call = (ASTCall) node;
+            for (int i = 0; i < call.jjtGetNumChildren(); i++) {
+                if (call.jjtGetChild(i) instanceof ASTArgumentList){
+                    argumentsAnalysis(functionSymbolTable, call.jjtGetChild(i));
+                }
+            }
+        }
+        else if (node instanceof ASTArgumentList){
+            ASTArgumentList argumentList = (ASTArgumentList) node;
+            for (int i = 0; i < argumentList.jjtGetNumChildren(); i++) {
+                if (argumentList.jjtGetChild(i) instanceof ASTArgument){
+                    ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
+
+                    if (argument.type == "ID" && functionSymbolTable.getParameters().get(argument.name) == null && functionSymbolTable.getVariables().get(argument.name) == null && !functionSymbolTable.getReturnSymbol().getName().equals(access.name))
+                        System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + argument.name);  //Debug                    
+                }
+            }
+        }
+
+        
     }
 
     public boolean canAddVariable(SymbolTable functionSymbolTable, String name, String type, int registerCounter){
