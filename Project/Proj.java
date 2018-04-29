@@ -190,10 +190,13 @@ public class Proj {
                                 String functionName = call.function;
                                 String functionModule = call.module;
 
-                                if (functionModule.equals("")) //if the functions belongs to this module
-                                    type = symbolTables.get(functionName).getReturnSymbol().getType(); //gets that function return type
-                                else
-                                    type = "int"; //otherwise it's int
+                                if(symbolTables.get(functionName).getReturnSymbol()!= null){
+                                    if (functionModule.equals("")) //if the functions belongs to this module
+                                        type = symbolTables.get(functionName).getReturnSymbol().getType(); //gets that function return type
+                                    else
+                                        type = "int"; //otherwise it's int
+                                }
+                               
                             } else {
                                 for (int k = 0; k < term.jjtGetNumChildren(); k++) {
 
@@ -202,8 +205,8 @@ public class Proj {
 
                                         if (functionSymbolTable.getParameters().get(access.name) == null
                                                 && functionSymbolTable.getVariables().get(access.name) == null
-                                                && !functionSymbolTable.getReturnSymbol().getName()
-                                                        .equals(access.name)) {
+                                                && (functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName()
+                                                        .equals(access.name))) {
                                             System.out
                                                     .println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + access.name); //Debug
                                         }
@@ -541,13 +544,19 @@ public class Proj {
                 file.println("  invokestatic " + this.moduleName + "/" + functionHeader(call.function));
             } else {
 
-                if (call.module.equals("io") && call.function.equals("println")) {
-                    if (call.jjtGetChild(0).jjtGetNumChildren() == 2)
-                        file.println("  invokestatic io/println(Ljava/lang/String;I)V");
-                    else
-                        file.println("  invokestatic io/println(Ljava/lang/String)V");
-
+                if(call.jjtGetNumChildren() > 0){
+                    if (call.module.equals("io") && call.function.equals("println")) {
+                        if (call.jjtGetChild(0).jjtGetNumChildren() == 2)
+                            file.println("  invokestatic io/println(Ljava/lang/String;I)V");
+                        else
+                            file.println("  invokestatic io/println(Ljava/lang/String)V");
+    
+                    }
                 }
+                else{
+                    file.println("  invokestatic io/println()V");
+                }
+               
 
             }
         } else if (node instanceof ASTWhile) { // WHILE
