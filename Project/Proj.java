@@ -137,9 +137,7 @@ public class Proj {
                         }
 
                         //Variables
-                        if (function.jjtGetChild(j) instanceof ASTAssign || function.jjtGetChild(j) instanceof ASTWhile
-                                || function.jjtGetChild(j) instanceof ASTIf
-                                || function.jjtGetChild(j) instanceof ASTElse)
+                        if (function.jjtGetChild(j) instanceof ASTAssign || function.jjtGetChild(j) instanceof ASTWhile || function.jjtGetChild(j) instanceof ASTIf || function.jjtGetChild(j) instanceof ASTElse)
                             saveFunctionVariables(functionSymbolTable, function.jjtGetChild(j));
 
                         //Additional Semantic Analysis
@@ -159,27 +157,55 @@ public class Proj {
             ASTAssign assign = (ASTAssign) node;
             String name = "";
             String type = "int";
+            boolean arrayIndex = false;
 
             for (int i = 0; i < assign.jjtGetNumChildren(); i++) {
                 if (assign.jjtGetChild(i) instanceof ASTAccess) {
                     ASTAccess access = (ASTAccess) assign.jjtGetChild(i);
                     name = access.name;
+
+                    for (int j = 0; j < access.jjtGetNumChildren(); j++) { //In Array Accesses an int must be inside the brackets
+                        if (access.jjtGetChild(j) instanceof ASTArrayAccess) {
+                            ASTArrayAccess arrayAccess = (ASTArrayAccess) access.jjtGetChild(j);
+
+                            for (int k = 0; k < arrayAccess.jjtGetNumChildren(); k++) {
+                                if (arrayAccess.jjtGetChild(k) instanceof ASTIndex) {
+                                    ASTIndex index = (ASTIndex) arrayAccess.jjtGetChild(k);
+
+                                    arrayIndex = true;
+        
+                                    if (index.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
+                                        if (functionSymbolTable.getParameters().get(index.name) == null && functionSymbolTable.getVariables().get(index.name) == null && functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName().equals(index.name))
+                                            System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Name: " + index.name); //Debug
+                                        else if (functionSymbolTable.getAcessType(index.name) != "int") { //Variable must represent an int
+                                            System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Wrong Type: " + index.name); //Debug
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 else if (assign.jjtGetChild(i) instanceof ASTRhs) {
                     ASTRhs rhs = (ASTRhs) assign.jjtGetChild(i);
 
                     for (int j = 0; j < rhs.jjtGetNumChildren(); j++) {
-                        if (rhs.jjtGetChild(j) instanceof ASTArraySize) {
+                        if (rhs.jjtGetChild(j) instanceof ASTArraySize) { 
                             ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(j);
+
+                            if (arrayIndex)
+                                System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Name: " + arraySize); //Debug
+
                             type = "array";
 
-                            if (arraySize.value.isEmpty())
-                                if (functionSymbolTable.getParameters().get(arraySize.name) == null
-                                        && functionSymbolTable.getVariables().get(arraySize.name) == null
-                                        && !functionSymbolTable.getReturnSymbol().getName().equals(arraySize.name))
-                                    System.out
-                                            .println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Name: " + arraySize.name); //Debug
+                            if (arraySize.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
+                                if (functionSymbolTable.getParameters().get(arraySize.name) == null && functionSymbolTable.getVariables().get(arraySize.name) == null && functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName().equals(arraySize.name))
+                                    System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Name: " + arraySize.name); //Debug
+                                else if (functionSymbolTable.getAcessType(arraySize.name) != "int") { //Variable must represent an int
+                                    System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Wrong Type: " + arraySize.name); //Debug
+                                }
+                            }
                         }
 
                         if (rhs.jjtGetChild(j) instanceof ASTTerm) {
@@ -203,13 +229,8 @@ public class Proj {
                                     if (term.jjtGetChild(k) instanceof ASTAccess) {
                                         ASTAccess access = (ASTAccess) term.jjtGetChild(k);
 
-                                        if (functionSymbolTable.getParameters().get(access.name) == null
-                                                && functionSymbolTable.getVariables().get(access.name) == null
-                                                && (functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName()
-                                                        .equals(access.name))) {
-                                            System.out
-                                                    .println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + access.name); //Debug
-                                        }
+                                        if (functionSymbolTable.getParameters().get(access.name) == null && functionSymbolTable.getVariables().get(access.name) == null && (functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName().equals(access.name)))
+                                            System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + access.name); //Debug
                                     }
                                 }
                             }
@@ -251,12 +272,8 @@ public class Proj {
                                 if (term.jjtGetChild(k) instanceof ASTAccess) {
                                     ASTAccess access = (ASTAccess) term.jjtGetChild(k);
 
-                                    if (functionSymbolTable.getReturnSymbol() != null)
-                                        if (functionSymbolTable.getParameters().get(access.name) == null
-                                                && functionSymbolTable.getVariables().get(access.name) == null
-                                                && !functionSymbolTable.getReturnSymbol().getName().equals(access.name))
-                                            System.out
-                                                    .println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + access.name); //Debug
+                                    if (functionSymbolTable.getParameters().get(access.name) == null && functionSymbolTable.getVariables().get(access.name) == null && functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName().equals(access.name))
+                                        System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + access.name); //Debug
                                 }
                             }
                         }
@@ -290,11 +307,8 @@ public class Proj {
                 if (argumentList.jjtGetChild(i) instanceof ASTArgument) {
                     ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
 
-                    if (functionSymbolTable.getReturnSymbol() != null)
-                        if (argument.type == "ID" && functionSymbolTable.getParameters().get(argument.name) == null
-                                && functionSymbolTable.getVariables().get(argument.name) == null
-                                && !functionSymbolTable.getReturnSymbol().getName().equals(argument.name))
-                            System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + argument.name); //Debug                    
+                    if (argument.type == "ID" && functionSymbolTable.getParameters().get(argument.name) == null && functionSymbolTable.getVariables().get(argument.name) == null && functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName().equals(argument.name))
+                        System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + argument.name); //Debug                    
                 }
             }
         }
