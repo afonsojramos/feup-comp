@@ -26,6 +26,7 @@ module all {
 		io.println();
 		
 		c = a + b; // comment this so function calls below have undeclared variable errors
+		a = a - 1;
 		io.println("c = ", c);
 		
 		io.println();
