@@ -171,15 +171,14 @@ public class Proj {
                             for (int k = 0; k < arrayAccess.jjtGetNumChildren(); k++) {
                                 if (arrayAccess.jjtGetChild(k) instanceof ASTIndex) {
                                     ASTIndex index = (ASTIndex) arrayAccess.jjtGetChild(k);
-
+                                    
                                     arrayIndex = true;
         
                                     if (index.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
-                                        if (functionSymbolTable.getParameters().get(index.name) == null && functionSymbolTable.getVariables().get(index.name) == null && functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName().equals(index.name))
-                                            System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Name: " + index.name); //Debug
-                                        else if (functionSymbolTable.getAcessType(index.name) != "int") { //Variable must represent an int
-                                            System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Wrong Type: " + index.name); //Debug
-                                        }
+                                        if (functionSymbolTable.getFromAll(index.name) == null)
+                                            printSemanticError(index.name, "Undefined variable.");
+                                        else if (functionSymbolTable.getAcessType(index.name) != "int") //Variable must represent an int
+                                            printSemanticError(index.name, "Type mismatch.");
                                     }
                                 }
                             }
@@ -195,16 +194,18 @@ public class Proj {
                             ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(j);
 
                             if (arrayIndex)
-                                System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Name: " + arraySize); //Debug
+                                printSemanticError(arraySize.name, "Undefined variable.");
+                           
+                            if (functionSymbolTable.getAcessType(name) == "int") //Variable previously defined as integer
+                                System.out.println("Variable " + arraySize); //Debug
 
                             type = "array";
 
                             if (arraySize.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
-                                if (functionSymbolTable.getParameters().get(arraySize.name) == null && functionSymbolTable.getVariables().get(arraySize.name) == null && functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName().equals(arraySize.name))
-                                    System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Name: " + arraySize.name); //Debug
-                                else if (functionSymbolTable.getAcessType(arraySize.name) != "int") { //Variable must represent an int
-                                    System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> Wrong Type: " + arraySize.name); //Debug
-                                }
+                                if (functionSymbolTable.getFromAll(arraySize.name) == null)
+                                    printSemanticError(arraySize.name, "Undefined variable.");
+                                else if (functionSymbolTable.getAcessType(arraySize.name) != "int") //Variable must represent an int
+                                    printSemanticError(arraySize.name, "Type mismatch.");
                             }
                         }
 
@@ -216,7 +217,9 @@ public class Proj {
                                 String functionName = call.function;
                                 String functionModule = call.module;
 
-                                if(symbolTables.get(functionName).getReturnSymbol()!= null){
+                                argumentsAnalysis(functionSymbolTable, call);
+
+                                if(symbolTables.get(functionName).getReturnSymbol() != null){
                                     if (functionModule.equals("")) //if the functions belongs to this module
                                         type = symbolTables.get(functionName).getReturnSymbol().getType(); //gets that function return type
                                     else
@@ -228,9 +231,35 @@ public class Proj {
 
                                     if (term.jjtGetChild(k) instanceof ASTAccess) {
                                         ASTAccess access = (ASTAccess) term.jjtGetChild(k);
+                                        boolean deepAccess = false;
 
-                                        if (functionSymbolTable.getParameters().get(access.name) == null && functionSymbolTable.getVariables().get(access.name) == null && (functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName().equals(access.name)))
-                                            System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + access.name); //Debug
+                                        if (functionSymbolTable.getFromAll(access.name) == null)
+                                            printSemanticError(access.name, "Variable not previously defined.");
+
+                                        for (int l = 0; l < access.jjtGetNumChildren(); l++) {
+                                            if (access.jjtGetChild(l) instanceof ASTArrayAccess) {
+                                                ASTArrayAccess arrayAccess = (ASTArrayAccess) access.jjtGetChild(l);
+                                                deepAccess = true;
+                    
+                                                for (int m = 0; m < arrayAccess.jjtGetNumChildren(); m++) {
+                                                    if (arrayAccess.jjtGetChild(m) instanceof ASTIndex) {
+                                                        ASTIndex index = (ASTIndex) arrayAccess.jjtGetChild(m);
+                                                                                    
+                                                        if (index.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
+                                                            if (functionSymbolTable.getFromAll(index.name) == null)
+                                                                printSemanticError(index.name, "Undefined variable.");
+                                                            else if (functionSymbolTable.getAcessType(index.name) != "int") //Variable must represent an int
+                                                                printSemanticError(index.name, "Type mismatch.");
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            if (access.jjtGetChild(l) instanceof ASTSizeAccess) 
+                                                deepAccess = true;
+                                        }
+
+                                        if (functionSymbolTable.getAcessType(access.name) != type && !deepAccess)
+                                            printSemanticError(access.name, "Type mismatch.");
                                     }
                                 }
                             }
@@ -252,11 +281,8 @@ public class Proj {
                 if (exprtest.jjtGetChild(i) instanceof ASTAccess) {
                     ASTAccess access = (ASTAccess) exprtest.jjtGetChild(i);
 
-                    if (functionSymbolTable.getParameters().get(access.name) == null
-                            && functionSymbolTable.getVariables().get(access.name) == null
-                            && !functionSymbolTable.getReturnSymbol().getName().equals(access.name)) {
-                        System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + access.name); //Debug
-                    }
+                    if (functionSymbolTable.getFromAll(access.name) == null)
+                        printSemanticError(access.name, "Undefined variable.");
                 }
 
                 else if (exprtest.jjtGetChild(i) instanceof ASTRhs) {
@@ -272,8 +298,8 @@ public class Proj {
                                 if (term.jjtGetChild(k) instanceof ASTAccess) {
                                     ASTAccess access = (ASTAccess) term.jjtGetChild(k);
 
-                                    if (functionSymbolTable.getParameters().get(access.name) == null && functionSymbolTable.getVariables().get(access.name) == null && functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName().equals(access.name))
-                                        System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + access.name); //Debug
+                                    if (functionSymbolTable.getFromAll(access.name) == null)
+                                        printSemanticError(access.name, "Undefined variable.");
                                 }
                             }
                         }
@@ -307,8 +333,8 @@ public class Proj {
                 if (argumentList.jjtGetChild(i) instanceof ASTArgument) {
                     ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
 
-                    if (argument.type == "ID" && functionSymbolTable.getParameters().get(argument.name) == null && functionSymbolTable.getVariables().get(argument.name) == null && functionSymbolTable.getReturnSymbol() != null && !functionSymbolTable.getReturnSymbol().getName().equals(argument.name))
-                        System.out.println("STOP RIGHT THERE YOU CRIMINAL SCUM ---> " + argument.name); //Debug                    
+                    if (argument.type.equals("ID") && functionSymbolTable.getFromAll(argument.name) == null)
+                        printSemanticError(argument.name, "Argument not previously defined.");                   
                 }
             }
         }
@@ -853,5 +879,9 @@ public class Proj {
 
         }
 
+    }
+
+    public void printSemanticError(String var, String error) {
+        System.out.println( ANSI_RED + "Semantic Error: " + ANSI_RESET + var + " -> " + error);
     }
 }
