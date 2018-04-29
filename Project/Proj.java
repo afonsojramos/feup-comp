@@ -448,7 +448,7 @@ public class Proj {
         int nrLocals = nrParameters + nrVariables + nrReturn;
         int nrStack = nrLocals; //TODO: alterar para nÃºmero correto
 
-        file.println("  .limit stack " + nrStack);
+        file.println("  .limit stack " + "10");
         file.println("  .limit locals " + nrLocals);
 
         //function statements
