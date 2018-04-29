@@ -768,9 +768,11 @@ public class Proj {
 
         } else { //Global variable             
             Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
-            String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
+            if(globalVariable!=null){
+                String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
 
-            file.println("  putstatic " + this.moduleName + "/" + globalVariable.getName() + globalVariableType);
+                file.println("  putstatic " + this.moduleName + "/" + globalVariable.getName() + globalVariableType);
+            }
 
         }
     }
@@ -786,9 +788,12 @@ public class Proj {
 
             } else { //Global variable             
                 Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
-                String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
 
-                file.println("  getstatic " + this.moduleName + "/" + globalVariable.getName() + globalVariableType);
+                if(globalVariable!=null){
+                    String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
+
+                    file.println("  getstatic " + this.moduleName + "/" + globalVariable.getName() + globalVariableType);
+                }
 
             }
         }
