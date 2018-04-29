@@ -453,9 +453,12 @@ public class Proj {
 
         //function statements
         for (int i = 0; i < function.jjtGetNumChildren(); i++) {
-            file.print("\n");
-            statementToJvm(file, functionTable, function.jjtGetChild(i));
-            file.print("\n");
+           
+            if(!(function.jjtGetChild(i) instanceof ASTElement || function.jjtGetChild(i) instanceof ASTVarlist)){
+                file.print("\n");
+                statementToJvm(file, functionTable, function.jjtGetChild(i));
+                file.print("\n");
+            }
         }
 
         //function return
