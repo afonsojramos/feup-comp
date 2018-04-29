@@ -22,7 +22,7 @@ module all {
 		io.println("dif = ", dif);
 		io.println("mul = ", mul);
 		io.println("div = ", div);
-		
+
 		io.println();
 		
 		c = a + b; // comment this so function calls below have undeclared variable errors

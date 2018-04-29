@@ -446,11 +446,11 @@ public class Proj {
 
         //function header
 
-        file.println("\n.method public static ");
+        file.print("\n.method public static ");
         if (function.name.equals("main")) {
-            file.println("main([Ljava/lang/String;)V");
+            file.print("main([Ljava/lang/String;)V\n");
         } else {
-            file.println(functionHeader(function.name));
+            file.print(functionHeader(function.name)+"\n");
         }
 
         //function limits
@@ -462,12 +462,14 @@ public class Proj {
         int nrLocals = nrParameters + nrVariables + nrReturn;
         int nrStack = nrLocals; //TODO: alterar para nÃºmero correto
 
-        file.println("  .limit stack " + nrStack);
-        file.println("  .limit locals " + nrLocals + "\n");
+        file.println("  .limit stack " + "10");
+        file.println("  .limit locals " + nrLocals);
 
         //function statements
         for (int i = 0; i < function.jjtGetNumChildren(); i++) {
+            file.print("\n");
             statementToJvm(file, functionTable, function.jjtGetChild(i));
+            file.print("\n");
         }
 
         //function return
@@ -554,17 +556,36 @@ public class Proj {
         } else if (node instanceof ASTCall) { //CALLS
             ASTCall call = (ASTCall) node;
 
+            if(call.jjtGetNumChildren() > 0 && call.jjtGetChild(0) instanceof ASTArgumentList){ //function has arguments
+
+                ASTArgumentList argumentList = (ASTArgumentList) call.jjtGetChild(0);
+
+                for(int i = 0; i < argumentList.jjtGetNumChildren(); i++){
+
+                    ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
+
+                    printVariableLoad(file,functionTable,argument.name, argument.type);
+
+                }
+
+
+            }
+
             if (call.module.equals("")) {
                 file.println("  invokestatic " + this.moduleName + "/" + functionHeader(call.function));
             } else {
 
                 if(call.jjtGetNumChildren() > 0){
                     if (call.module.equals("io") && call.function.equals("println")) {
-                        if (call.jjtGetChild(0).jjtGetNumChildren() == 2)
-                            file.println("  invokestatic io/println(Ljava/lang/String;I)V");
-                        else
-                            file.println("  invokestatic io/println(Ljava/lang/String)V");
-    
+
+                        file.print("  invokestatic io/println");
+
+                        if (call.jjtGetChild(0).jjtGetNumChildren() == 2){
+                            file.println("(Ljava/lang/String;I)V");                            
+                        }
+                        else{
+                            file.println("(Ljava/lang/String)V");                            
+                        }    
                     }
                 }
                 else{
@@ -674,8 +695,12 @@ public class Proj {
             ASTTerm term = (ASTTerm) rhs.jjtGetChild(0);
 
             if (term.jjtGetNumChildren() == 0 && term.integer != "") { //eg.: a = 0
+                
+                String name = term.integer;
+                if (term.operator.equals("-"))
+                    name = '-' + name; //Negative number
 
-                printNumberLoad(file, term.integer, term.operator);
+                printVariableLoad(file, functionTable, name, "Integer");                
                 printVariableStore(file, functionTable, accessName);
 
                 //TODO: array (se a for array)
@@ -721,17 +746,38 @@ public class Proj {
         }
     }
 
-    public void printNumberLoad(PrintWriter file, String numberString, String operator) {
+    public void printVariableLoad(PrintWriter file, SymbolTable functionTable, String name, String type) {
 
-        int number = Integer.parseInt(numberString);
-        if (operator.equals("-"))
-            number = number * -1; //Negative number
+        if(type.equals("ID")){
+            Symbol variable = functionTable.getFromAll(name);
+            if (variable != null) { //Local Variables
+                file.println("  iload " + variable.getRegister());
 
-        if (number >= 0 && number <= 5)
-            file.println("  iconst_" + number);
-        else
-            file.println("  bipush " + number);
+                //TODO: array
 
+            } else { //Global variable             
+                Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
+                String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
+
+                file.println("  getstatic " + this.moduleName + "/" + globalVariable.getName() + globalVariableType);
+
+            }
+        }
+        else if(type.equals("Integer")){
+
+            int number = Integer.parseInt(name);
+
+            if (number >= 0 && number <= 5)
+                file.println("  iconst_" + number);
+            else
+                file.println("  bipush " + number);
+
+        }
+        else if(type.equals("String")){
+
+            file.println("  ldc " + name) ;
+        }
+      
     }
 
     public void semanticAnalysis(SimpleNode root) {
