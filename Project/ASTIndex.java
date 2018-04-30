@@ -3,6 +3,7 @@
 public class ASTIndex extends SimpleNode {
   public String name = "";
   public String value = "";
+  public int line = 0;
 
   public ASTIndex(int id) {
     super(id);

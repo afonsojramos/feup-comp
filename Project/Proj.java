@@ -14,6 +14,8 @@ public class Proj {
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
     public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+
     public static String fileName = "";
 
     private HashMap<String, SymbolTable> symbolTables = new HashMap<String, SymbolTable>();
@@ -176,9 +178,9 @@ public class Proj {
         
                                     if (index.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
                                         if (functionSymbolTable.getFromAll(index.name) == null)
-                                            printSemanticError(index.name, "Undefined variable.");
+                                            printSemanticError(index.name, index.line, "Undefined variable.");
                                         else if (functionSymbolTable.getAcessType(index.name) != "int") //Variable must represent an int
-                                            printSemanticError(index.name, "Type mismatch.");
+                                            printSemanticError(index.name, index.line, "Type mismatch.");
                                     }
                                 }
                             }
@@ -194,7 +196,7 @@ public class Proj {
                             ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(j);
 
                             if (arrayIndex)
-                                printSemanticError(arraySize.name, "Undefined variable.");
+                                printSemanticError(arraySize.name, arraySize.line, "Undefined variable.");
                            
                             if (functionSymbolTable.getAcessType(name) == "int") //Variable previously defined as integer
                                 System.out.println("Variable " + arraySize); //Debug
@@ -203,9 +205,9 @@ public class Proj {
 
                             if (arraySize.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
                                 if (functionSymbolTable.getFromAll(arraySize.name) == null)
-                                    printSemanticError(arraySize.name, "Undefined variable.");
+                                    printSemanticError(arraySize.name, arraySize.line, "Undefined variable.");
                                 else if (functionSymbolTable.getAcessType(arraySize.name) != "int") //Variable must represent an int
-                                    printSemanticError(arraySize.name, "Type mismatch.");
+                                    printSemanticError(arraySize.name, arraySize.line, "Type mismatch.");
                             }
                         }
 
@@ -234,7 +236,7 @@ public class Proj {
                                         boolean deepAccess = false;
 
                                         if (functionSymbolTable.getFromAll(access.name) == null)
-                                            printSemanticError(access.name, "Variable not previously defined.");
+                                            printSemanticError(access.name, access.line, "Variable not previously defined.");
 
                                         for (int l = 0; l < access.jjtGetNumChildren(); l++) {
                                             if (access.jjtGetChild(l) instanceof ASTArrayAccess) {
@@ -247,9 +249,9 @@ public class Proj {
                                                                                     
                                                         if (index.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
                                                             if (functionSymbolTable.getFromAll(index.name) == null)
-                                                                printSemanticError(index.name, "Undefined variable.");
+                                                                printSemanticError(index.name, index.line, "Undefined variable.");
                                                             else if (functionSymbolTable.getAcessType(index.name) != "int") //Variable must represent an int
-                                                                printSemanticError(index.name, "Type mismatch.");
+                                                                printSemanticError(index.name, index.line, "Type mismatch.");
                                                         }
                                                     }
                                                 }
@@ -259,7 +261,7 @@ public class Proj {
                                         }
 
                                         if (functionSymbolTable.getAcessType(access.name) != type && !deepAccess)
-                                            printSemanticError(access.name, "Type mismatch.");
+                                            printSemanticError(access.name, access.line, "Type mismatch.");
                                     }
                                 }
                             }
@@ -282,7 +284,7 @@ public class Proj {
                     ASTAccess access = (ASTAccess) exprtest.jjtGetChild(i);
 
                     if (functionSymbolTable.getFromAll(access.name) == null)
-                        printSemanticError(access.name, "Undefined variable.");
+                        printSemanticError(access.name, access.line, "Undefined variable.");
                 }
 
                 else if (exprtest.jjtGetChild(i) instanceof ASTRhs) {
@@ -299,7 +301,7 @@ public class Proj {
                                     ASTAccess access = (ASTAccess) term.jjtGetChild(k);
 
                                     if (functionSymbolTable.getFromAll(access.name) == null)
-                                        printSemanticError(access.name, "Undefined variable.");
+                                        printSemanticError(access.name, access.line, "Undefined variable.");
                                 }
                             }
                         }
@@ -334,7 +336,7 @@ public class Proj {
                     ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
 
                     if (argument.type.equals("ID") && functionSymbolTable.getFromAll(argument.name) == null)
-                        printSemanticError(argument.name, "Argument not previously defined.");                   
+                        printSemanticError(argument.name, argument.line, "Argument not previously defined.");                   
                 }
             }
         }
@@ -889,7 +891,7 @@ public class Proj {
 
     }
 
-    public void printSemanticError(String var, String error) {
-        System.out.println( ANSI_RED + "Semantic Error: " + ANSI_RESET + var + " -> " + error);
+    public void printSemanticError(String var, int line, String error) {
+        System.out.println( ANSI_RED + "Semantic Error!\n" + ANSI_YELLOW + "Line " + line + ANSI_RESET + " : " + var + " -> " + error);
     }
 }

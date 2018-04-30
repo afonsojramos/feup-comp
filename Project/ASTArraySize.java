@@ -3,6 +3,7 @@
 public class ASTArraySize extends SimpleNode {
   public String name = "";
   public String value = "";
+  public int line = 0;
 
   public ASTArraySize(int id) {
     super(id);
