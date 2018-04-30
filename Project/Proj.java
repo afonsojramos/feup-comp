@@ -64,7 +64,6 @@ public class Proj {
             root.dump("");
             buildSymbolTables(root);
             fillFunctionSymbolTables(root);
-            //semanticAnalysis(root);
             yalToJasmin(root);
             System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_GREEN + " The input was read sucessfully." + ANSI_RESET);
         } catch (ParseException e) {
@@ -836,81 +835,6 @@ public class Proj {
         } else if (type.equals("String")) {
 
             file.println("  ldc " + name);
-        }
-
-    }
-
-    public void semanticAnalysis(SimpleNode root) {
-        if (root != null && root instanceof ASTModule) {
-
-            ASTModule module = (ASTModule) root;
-            System.out.println("\n");
-
-            for (int i = 0; i < module.jjtGetNumChildren(); i++) {
-                if (module.jjtGetChild(i) instanceof ASTFunction) {
-                    ASTFunction function = (ASTFunction) module.jjtGetChild(i);
-                    SymbolTable functionTable = symbolTables.get(function.name);
-
-                    System.out.println("\n > " + function.name);
-
-                    for (int k = 0; k < function.jjtGetNumChildren(); k++) {
-
-                        if (function.jjtGetChild(k) instanceof ASTAssign) {
-
-                            String name1 = "", name2 = "";
-                            String type1 = "", type2 = "";
-
-                            if (function.jjtGetChild(k).jjtGetChild(0) instanceof ASTAccess) {
-                                ASTAccess access = (ASTAccess) function.jjtGetChild(k).jjtGetChild(0);
-
-                                name1 = access.name;
-
-                                if (access.jjtGetNumChildren() > 0 && access.jjtGetChild(0) instanceof ASTArrayAccess) {
-                                    type1 = "int";
-                                } else
-                                    type1 = functionTable.getAcessType(name1);
-
-                            }
-
-                            name2 = "TEST";
-                            if (function.jjtGetChild(k).jjtGetChild(1) instanceof ASTRhs) {
-                                ASTRhs rhs = (ASTRhs) function.jjtGetChild(k).jjtGetChild(1);
-
-                                if ((rhs.jjtGetNumChildren() == 1) && rhs.jjtGetChild(0) instanceof ASTTerm) {
-
-                                    if (rhs.jjtGetChild(0).jjtGetNumChildren() == 0) {
-                                        type2 = "int";
-                                        name2 = ((ASTTerm) rhs.jjtGetChild(0)).operator + "";
-                                    } else if (rhs.jjtGetChild(0).jjtGetChild(0) instanceof ASTCall) {
-
-                                        name2 = ((ASTCall) rhs.jjtGetChild(0).jjtGetChild(0)).function;
-                                        SymbolTable functionCall = symbolTables.get(name2);
-                                        type2 = functionCall.getReturnSymbol().getType();
-
-                                    }
-
-                                }
-
-                            }
-
-                            String tmp = "";
-                            if (type1.equals(type2) || type1.equals("array")) {
-                                tmp = "RIGHT";
-                            } else
-                                tmp = "WRONG";
-
-                            System.out.println(
-                                    "- " + tmp + "  -> " + name1 + "(" + type1 + ") = " + name2 + "(" + type2 + ")");
-                        }
-
-                    }
-
-                }
-
-                System.out.println("\n\n");
-
-            }
-
         }
 
     }
