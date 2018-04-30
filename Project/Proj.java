@@ -125,7 +125,9 @@ public class Proj {
 
                     System.out.println("FUNCTION - > " + function.name); //Debug
 
-                    this.registerCounter = 0;
+                    if(function.name.equals("main"))
+                        this.registerCounter = 1;
+                    else this.registerCounter = 0;
 
                     for (int j = 0; j < function.jjtGetNumChildren(); j++) {
 
@@ -166,6 +168,7 @@ public class Proj {
                 }
             }
         }
+        printSymbolTables();
     }
 
     public void saveFunctionVariables(SymbolTable functionSymbolTable, Node node) {
@@ -528,6 +531,7 @@ public class Proj {
         int nrReturn = functionTable.getReturnSymbol() != null ? 1 : 0;
 
         int nrLocals = nrParameters + nrVariables + nrReturn;
+        if(function.name.equals("main")) nrLocals++;
         int nrStack = nrLocals; //TODO: alterar para nÃºmero correto
 
         file.println("  .limit stack " + "10");
