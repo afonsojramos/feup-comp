@@ -657,7 +657,7 @@ public class Proj {
                         } else if (rhs.jjtGetNumChildren() == 2) { //operations
                             String term1 = getTerm((ASTTerm) rhs.jjtGetChild(0));
                             String term2 = getTerm((ASTTerm) rhs.jjtGetChild(1));
-                            printOperation(file, functionTable, access.name, rhs.operator, term1, term2);
+                            manageOperation(file, functionTable, access.name, rhs.operator, term1, term2);
                         }
 
                         //assign of array accesses
@@ -705,53 +705,57 @@ public class Proj {
         }
     }
 
-    public void printOperation(PrintWriter file, SymbolTable functionTable, String accessName, String operator,
-            String term1, String term2) {
+    public void manageOperation(PrintWriter file, SymbolTable functionTable, String accessName, String operator, String term1, String term2) {
         String regex = "\\d+";
         if ((accessName.equals(term1) || accessName.equals(term2)) && (term1.matches(regex) || term2.matches(regex))
                 && (operator.equals("+") || operator.equals("-"))) {
 
-            if (operator.equals("+"))
-                operator = " ";
-            else
-                operator = " -";
-
             if (term2.matches(regex)) { // iinc term1 term2
-                printVariableInc(file, functionTable, term1, operator, term2);
+                if (printVariableInc(file, functionTable, term1, operator, term2))
+                    return;
             } else { // iinc term2 term1
-                printVariableInc(file, functionTable, term2, operator, term1);
+                if (printVariableInc(file, functionTable, term2, operator, term1))
+                    return;
             }
+            printOperation(file, functionTable, accessName, operator, term1, term2); //if global variable
+        } else
+            printOperation(file, functionTable, accessName, operator, term1, term2);
+    }
+
+    public void printOperation(PrintWriter file, SymbolTable functionTable, String accessName, String operator,
+            String term1, String term2) {
+        String regex = "\\d+";
+
+        if (term2.matches(regex)) {
+            printVariableLoad(file, functionTable, term1, "ID");
+            printVariableLoad(file, functionTable, term2, "Integer");
+        } else if (term1.matches(regex)) {
+            printVariableLoad(file, functionTable, term1, "Integer");
+            printVariableLoad(file, functionTable, term2, "ID");
         } else {
-            if (term2.matches(regex)) {
-                printVariableLoad(file, functionTable, term1, "ID");
-                printVariableLoad(file, functionTable, term2, "Integer");
-            } else if (term1.matches(regex)) {
-                printVariableLoad(file, functionTable, term1, "Integer");
-                printVariableLoad(file, functionTable, term2, "ID");
-            } else {
-                printVariableLoad(file, functionTable, term1, "ID");
-                printVariableLoad(file, functionTable, term2, "ID");
-            }
-
-            switch (operator) {
-            case "+":
-                file.println("  iadd");
-                break;
-            case "-":
-                file.println("  isub");
-                break;
-            case "*":
-                file.println("  imul");
-                break;
-            case "/":
-                file.println("  idiv");
-                break;
-            default:
-                break;
-            }
-
-            printVariableStore(file, functionTable, accessName);
+            printVariableLoad(file, functionTable, term1, "ID");
+            printVariableLoad(file, functionTable, term2, "ID");
         }
+
+        switch (operator) {
+        case "+":
+            file.println("  iadd");
+            break;
+        case "-":
+            file.println("  isub");
+            break;
+        case "*":
+            file.println("  imul");
+            break;
+        case "/":
+            file.println("  idiv");
+            break;
+        default:
+            break;
+        }
+
+        printVariableStore(file, functionTable, accessName);
+
     }
 
     public String getTerm(ASTTerm term) {
@@ -817,21 +821,20 @@ public class Proj {
         }
     }
 
-    public void printVariableInc(PrintWriter file, SymbolTable functionTable, String termVariable, String operator, String termNumber) {
+    public boolean printVariableInc(PrintWriter file, SymbolTable functionTable, String termVariable, String operator, String termNumber) {
 
         Symbol variable = functionTable.getFromAll(termVariable);
         if (variable != null) { //Local Variables
+
+            if (operator.equals("+"))
+                operator = " ";
+            else
+                operator = " -";
+
             file.println("  iinc " + variable.getRegister() + operator + termNumber);
-
-        } else { //Global variable             
-            Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(termVariable);
-            if (globalVariable != null) {
-                String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
-
-                file.println("  iinc " + this.moduleName + "/" + globalVariable.getName() + operator + termNumber);
-            }
-
-        }
+            return true;
+        } else
+            return false;
     }
 
     public void printVariableStore(PrintWriter file, SymbolTable functionTable, String name) {
