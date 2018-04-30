@@ -21,6 +21,7 @@ public class Proj {
     private HashMap<String, SymbolTable> symbolTables = new HashMap<String, SymbolTable>();
     private String moduleName;
     private int registerCounter = 0;
+    private int errorCount = 1;
 
     public static void main(String args[]) throws ParseException {
         yal2jvm parser;
@@ -122,8 +123,6 @@ public class Proj {
                 if (module.jjtGetChild(i) instanceof ASTFunction) {
                     ASTFunction function = (ASTFunction) module.jjtGetChild(i);
                     SymbolTable functionSymbolTable = this.symbolTables.get(function.name);
-
-                    System.out.println("FUNCTION - > " + function.name); //Debug
 
                     if(function.name.equals("main"))
                         this.registerCounter = 1;
@@ -351,6 +350,10 @@ public class Proj {
 
             for (int i = 0; i < call.jjtGetNumChildren(); i++) {
                 if (call.jjtGetChild(i) instanceof ASTArgumentList) {
+
+					if (this.symbolTables.get(call.function) != null && call.jjtGetChild(i).jjtGetNumChildren() != this.symbolTables.get(call.function).getParameters().size())
+						printSemanticError(call.function, call.line, "Wrong number of arguments.");
+
                     argumentsAnalysis(functionSymbolTable, call.jjtGetChild(i));
                 }
             }
@@ -855,6 +858,6 @@ public class Proj {
     }
 
     public void printSemanticError(String var, int line, String error) {
-        System.out.println( ANSI_RED + "Semantic Error!\n" + ANSI_YELLOW + "Line " + line + ANSI_RESET + " : " + var + " -> " + error);
+        System.out.println( ANSI_RED + "Semantic Error nº" + errorCount++ + "!\n" + ANSI_YELLOW + "Line " + line + ANSI_RESET + " : " + var + " -> " + error);
     }
 }
