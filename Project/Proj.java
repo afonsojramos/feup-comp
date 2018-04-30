@@ -10,11 +10,11 @@ import java.util.Iterator;
 
 public class Proj {
 
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_CYAN = "\u001B[36m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static String ANSI_RESET = "";
+    public static String ANSI_RED = "";
+    public static String ANSI_GREEN = "";
+    public static String ANSI_CYAN = "";
+    public static String ANSI_YELLOW = "";
 
     public static String fileName = "";
 
@@ -28,7 +28,14 @@ public class Proj {
         if (args.length == 0) {
             System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " Reading input ...");
             parser = new yal2jvm(System.in);
-        } else if (args.length == 1) {
+        } else if (args.length == 1 || args.length == 2) {
+            if (args[1].toString().equals("color")){
+                ANSI_RESET = "\u001B[0m";
+                ANSI_RED = "\u001B[31m";
+                ANSI_GREEN = "\u001B[32m";
+                ANSI_CYAN = "\u001B[36m";
+                ANSI_YELLOW = "\u001B[33m";
+            }
             fileName = args[0];
             System.out.println(
                     ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " Reading the file " + args[0] + " ..." + ANSI_RESET);
@@ -226,8 +233,10 @@ public class Proj {
 
                             if (term.jjtGetNumChildren() > 0 && term.jjtGetChild(0) instanceof ASTCall) {
                                 ASTCall call = (ASTCall) term.jjtGetChild(0);
-
-                                System.out.print(call.module);
+                                
+                                
+                                if (this.symbolTables.get(call.function) != null && functionSymbolTable.getFromAll(name) != null && functionSymbolTable.getFromAll(name).getType() != this.symbolTables.get(call.function).getReturnSymbol().getType())
+                                        printSemanticError(call.function, call.line, "Fuction type mismatch.");
 
                                 argumentsAnalysis(functionSymbolTable, call);
 
