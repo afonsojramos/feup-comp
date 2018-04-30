@@ -50,7 +50,7 @@ module semantictest {
         scalar = c(arr) + not();                        // err10 err11 err12 c() not declared, not() not declared, return types invalid for operation
         scalar = f();                                   // err13 assign scalar to array return
         a = f();
-        a = scalar(5, arr);                             // err14 assigning scalar return to array
+        a = scalar(5, arr);                             // assigning scalar return to array
         a = a.size;
         a = io.func();
         scalar = io.func2();
@@ -83,8 +83,8 @@ module semantictest {
     function scal=moreerrors() {
    
         scal = 2;
-        newscal = scal.size + 5;                        // err23 .size on scalar
-        arr.size = 5;                                   // err24 .size on LHS
+        newscal = scal.size + 5;                        // err23 .size on scalar TODO
+        arr.size = 5;                                   // err24 .size on LHS TODO
        
         myscal = 2;
         myscal = [20];                                  // err25 already a scalar
@@ -94,32 +94,32 @@ module semantictest {
         newarr = [20];
         newarr = 5 + scalar(global, arr);
         newarr = arr ^ myscal;                          // err27 array on operation
-        newarr = myscal & f();                          // err28 array on operation
+        newarr = myscal & f();                          // err28 array on operation TODO
        
-        newarr = arr;
+        newarr = arr;                                   // TODO SHOULD NOT BE ERROR (Global defined as int???)
         myscal = arr[myscal] * arr[0];
        
         newarr = [nope.size];                           // err29 undeclared variable
-        myscal = notdecl + arr[notdecl2];               // err30 err31 undeclared variables
-        myscal = scalar(global, arr) ^ undecl;          // err32 undeclared variable
-        notarray[0] = global + myscal;                  // err33 undeclared array access on LHS
+        myscal = notdecl + arr[notdecl2];               // err30 err31 undeclared variables + TODO Extra Type mismatch (probably same error as 99)
+        myscal = scalar(global, arr) ^ undecl;          // err32 undeclared variable + TODO Extra Type mismatch (probably same error as 99)
+        notarray[0] = global + myscal;                  // err33 undeclared array access on LHS TODO
        
         arr[undecl] = 5;                                // err34 undeclared index
        
         anotherarr = [N];                               // err35 undeclared variable used as size
     }
    
-    function nope=noreturn() {                          // err36 return type not declared in locals / params / globals
+    function nope=noreturn() {                          // err36 return type not declared in locals / params / globals TODO
    
         myscal = 5;
     }
    
-    function nope[]=wrongtype() {                       // err37 return type mismatch
+    function nope[]=wrongtype() {                       // err37 return type mismatch TODO
    
         nope = 5;
     }
    
-    function a=globalmismatch() {                       // err38 return type mismatch with global array
+    function a=globalmismatch() {                       // err38 return type mismatch with global array TODO
    
         a[0] = 5;
     }

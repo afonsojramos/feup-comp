@@ -95,7 +95,7 @@ public class Proj {
                         printSemanticError(element.name, element.line, "Redefinition of global variable.");
                     else {
                         if (module.jjtGetChild(i).jjtGetNumChildren() == 2) {
-                            globalSymbolTable.addVariable(element.name, "array", -1);
+							globalSymbolTable.addVariable(element.name, "array", -1);
                         } else {
                             globalSymbolTable.addVariable(element.name, "int", -1);
                         }
@@ -153,7 +153,7 @@ public class Proj {
 
                                 if (element.jjtGetNumChildren() == 1) {
                                     if (functionSymbolTable.addParameter(element.name, "array", this.registerCounter))
-                                        this.registerCounter++;
+										this.registerCounter++;
                                 } else {
                                     if (functionSymbolTable.addParameter(element.name, "int", this.registerCounter))
                                         this.registerCounter++;
@@ -203,7 +203,7 @@ public class Proj {
                                     if (index.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
                                         if (functionSymbolTable.getFromAll(index.name) == null && symbolTables.get(moduleName).getFromAll(index.name) == null)
                                             printSemanticError(index.name, index.line, "Undefined variable.");
-                                        else if (functionSymbolTable.getAcessType(index.name) != "int") //Variable must represent an int
+                                        else if (functionSymbolTable.getAcessType(index.name) != "int" && this.symbolTables.get(this.moduleName).getAcessType(index.name) != "int") //Variable must represent an int
                                             printSemanticError(index.name, index.line, "Type mismatch.");
                                     }
                                 }
@@ -222,7 +222,7 @@ public class Proj {
                             if (arrayIndex)
                                 printSemanticError(arraySize.name, arraySize.line, "Undefined variable.");
                            
-                            if (functionSymbolTable.getAcessType(name) == "int") //Variable previously defined as integer
+                            if (functionSymbolTable.getAcessType(name) == "int" || this.symbolTables.get(this.moduleName).getAcessType(name) == "int") //Variable previously defined as integer
                                 printSemanticError(arraySize.name, arraySize.line, "Variable previously defined.");
 
                             type = "array";
@@ -231,7 +231,7 @@ public class Proj {
                                 if (functionSymbolTable.getFromAll(arraySize.name) == null && symbolTables.get(moduleName).getFromAll(arraySize.name) == null)
                                     printSemanticError(arraySize.name, arraySize.line, "Undefined variable.");
                                 else if (functionSymbolTable.getAcessType(arraySize.name) != "int") //Variable must represent an int
-                                    printSemanticError(arraySize.name, arraySize.line, "Type mismatch.");
+                                    printSemanticError(arraySize.name, arraySize.line, "Type mismatch..");
                             }
                         }
 
@@ -242,7 +242,7 @@ public class Proj {
                                 ASTCall call = (ASTCall) term.jjtGetChild(0);
 
                                 if (this.symbolTables.get(this.moduleName) != null && this.symbolTables.get(call.function) != null && this.symbolTables.get(call.function).getReturnSymbol() != null && (this.symbolTables.get(this.moduleName).getAcessType(name) == "int" || functionSymbolTable.getAcessType(name) == "int") && this.symbolTables.get(call.function).getReturnSymbol().getType() == "array"){
-                                    printSemanticError(call.function, call.line, "Function type mismatch.");
+                                    printSemanticError(call.function, call.line, "Function type mismatch...");
                                 }
 
                                 argumentsAnalysis(functionSymbolTable, call);
@@ -276,9 +276,9 @@ public class Proj {
                                                                                     
                                                         if (index.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
                                                             if (functionSymbolTable.getFromAll(index.name) == null && symbolTables.get(moduleName).getFromAll(index.name) == null)
-                                                                printSemanticError(index.name, index.line, "Undefined variable.");
+                                                                printSemanticError(index.name, index.line, "Undefined index.");
                                                             else if (functionSymbolTable.getAcessType(index.name) != "int") //Variable must represent an int
-                                                                printSemanticError(index.name, index.line, "Type mismatch.");
+                                                                printSemanticError(index.name, index.line, "Type mismatch....");
                                                         }
                                                     }
                                                 }
@@ -287,8 +287,8 @@ public class Proj {
                                                 deepAccess = true;
                                         }
 
-                                        if (functionSymbolTable.getAcessType(access.name) != type && !deepAccess)
-                                            printSemanticError(access.name, access.line, "Type mismatch.");
+                                        if ((functionSymbolTable.getAcessType(access.name) != type && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type) && !deepAccess)
+                                            printSemanticError(access.name, access.line, "Type mismatch.....");
                                     }
                                 }
                             }
@@ -361,7 +361,32 @@ public class Proj {
 					if (this.symbolTables.get(call.function) != null && call.jjtGetChild(i).jjtGetNumChildren() != this.symbolTables.get(call.function).getParameters().size())
 						printSemanticError(call.function, call.line, "Wrong number of arguments.");
 
-                    argumentsAnalysis(functionSymbolTable, call.jjtGetChild(i));
+                    ASTArgumentList argumentList = (ASTArgumentList) call.jjtGetChild(i);
+					for (int j = 0; j < argumentList.jjtGetNumChildren(); j++) {
+						if (argumentList.jjtGetChild(j) instanceof ASTArgument) {
+							ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(j);
+
+							if (argument.type.equals("ID") && functionSymbolTable.getFromAll(argument.name) == null && this.symbolTables.get(this.moduleName).getFromAll(argument.name) == null)
+								printSemanticError(argument.name, argument.line, "Argument undefined."); 
+
+							if (argument.type.equals("ID") && (functionSymbolTable.getFromAll(argument.name) != null || this.symbolTables.get(this.moduleName).getFromAll(argument.name) != null)){
+								if (this.symbolTables.get(call.function) != null){
+									Iterator<Symbol> it = this.symbolTables.get(call.function).getParameters().values().iterator();
+									int paramCount = 0;
+									while (it.hasNext())
+									{
+										Symbol currentSymbol = it.next();
+	
+										/* System.out.println(currentSymbol.getType() + " = " + argument.name + " " + this.symbolTables.get(this.moduleName).getAcessType(argument.name) + "\n in " + paramCount + " = " + j); */
+	
+										if ((currentSymbol.getType() != functionSymbolTable.getAcessType(argument.name) && currentSymbol.getType() != this.symbolTables.get(this.moduleName).getAcessType(argument.name)) && paramCount == j)
+											printSemanticError(argument.name, argument.line, "Wrong type of argument.");      
+										paramCount++;        
+									}
+								}
+							}
+						}
+					}
                 }
             }
         } else if (node instanceof ASTArgumentList) {
@@ -371,7 +396,8 @@ public class Proj {
                     ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
 
                     if (argument.type.equals("ID") && functionSymbolTable.getFromAll(argument.name) == null && symbolTables.get(moduleName).getFromAll(argument.name) == null)
-                        printSemanticError(argument.name, argument.line, "Argument not previously defined.");                   
+						printSemanticError(argument.name, argument.line, "Argument not previously defined."); 
+        
                 }
             }
         }
@@ -379,7 +405,7 @@ public class Proj {
     }
 
     public boolean canAddVariable(SymbolTable functionSymbolTable, String name, String type, int registerCounter) {
-        if (!this.symbolTables.get(this.moduleName).getVariables().containsValue(new Symbol(name, type, registerCounter))) {//verify if the new symbol isn't on the module symbol table already
+        if (this.symbolTables.get(this.moduleName).getFromAll(name) == null) {//verify if the new symbol isn't on the module symbol table already
             if (!functionSymbolTable.getParameters().containsValue(new Symbol(name, type, registerCounter))) { //verify if the new symbol isn't on the function's parameters already
                 if (functionSymbolTable.getReturnSymbol() != null) { //if the function returns a symbol
                     if (!functionSymbolTable.getReturnSymbol().equals(new Symbol(name, type, registerCounter))) // if the return symbol isnt't the new one
@@ -865,6 +891,6 @@ public class Proj {
     }
 
     public void printSemanticError(String var, int line, String error) {
-        System.out.println( ANSI_RED + "Semantic Error nº" + errorCount++ + "!\n" + ANSI_YELLOW + "Line " + line + ANSI_RESET + " : " + var + " -> " + error);
+        System.out.println( ANSI_RED + "Semantic Error nº" + errorCount++ + "!\n" + ANSI_YELLOW + "Line " + ANSI_CYAN + line + ANSI_RESET + " : " + var + " -> " + error);
     }
 }
