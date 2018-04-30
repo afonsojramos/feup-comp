@@ -26,7 +26,7 @@ module semantictest {
         scal2 = a.size ^ scal1;                         // scalar = size ^ scalar
         scal2 = a.size;                                 // scalar = size
  
-        scal1 = ext.func(a);
+        scal1 = io.func(a);
         c = [scal1];
         c = scal1;
     }
@@ -52,8 +52,8 @@ module semantictest {
         a = f();
         a = scalar(5, arr);                             // err14 assigning scalar return to array
         a = a.size;
-        a = ext.func();
-        scalar = ext.func2();
+        a = io.func();
+        scalar = io.func2();
  
         i = 3;
         a[i] = i;
