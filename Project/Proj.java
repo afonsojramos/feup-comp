@@ -552,8 +552,7 @@ public class Proj {
 
         if (functionTable.getReturnSymbol() != null) {
             if (functionTable.getReturnSymbol().getType() == "int") {
-
-                file.println("\n  iload " + functionTable.getReturnSymbol().getRegister());
+                file.println("\n  iload_" + functionTable.getReturnSymbol().getRegister());
                 file.println("  ireturn");
 
             } else { //array
@@ -816,7 +815,9 @@ public class Proj {
 
         Symbol variable = functionTable.getFromAll(name);
         if (variable != null) { //Local Variables
-            file.println("  istore " + variable.getRegister());
+            if(variable.getRegister() >= 0 && variable.getRegister()<=3)
+                file.println("  istore_" + variable.getRegister());
+            else file.println("  istore " + variable.getRegister());
 
         } else { //Global variable             
             Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
@@ -834,7 +835,9 @@ public class Proj {
         if (type.equals("ID")) {
             Symbol variable = functionTable.getFromAll(name);
             if (variable != null) { //Local Variables
-                file.println("  iload " + variable.getRegister());
+                if(variable.getRegister() >= 0 && variable.getRegister()<=3)
+                    file.println("  iload_" + variable.getRegister());
+                else file.println("  iload " + variable.getRegister());
 
                 //TODO: array
 
