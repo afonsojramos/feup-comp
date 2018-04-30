@@ -647,15 +647,21 @@ public class Proj {
                 operator = " -";
 
             if (term2.matches(regex)) { // iinc term1 term2
-                Symbol variable = functionTable.getFromAll(term1);
-                file.println("  iinc " + variable.getRegister() + operator + term2);
-            } else if (term1.matches(regex)) { // iinc term2 term1
-                Symbol variable = functionTable.getFromAll(term2);
-                file.println("  iinc " + variable.getRegister() + operator + term1);
+                printVariableInc(file, functionTable, term1, operator, term2);
+            } else { // iinc term2 term1
+                printVariableInc(file, functionTable, term2, operator, term1);
             }
         } else {
-            printLoad(file, functionTable, term1);
-            printLoad(file, functionTable, term2);
+            if (term2.matches(regex)) {
+                printVariableLoad(file, functionTable, term1, "ID");
+                printVariableLoad(file, functionTable, term2, "Integer");
+            } else if (term1.matches(regex)) {
+                printVariableLoad(file, functionTable, term1, "Integer");
+                printVariableLoad(file, functionTable, term2, "ID");
+            } else {
+                printVariableLoad(file, functionTable, term1, "ID");
+                printVariableLoad(file, functionTable, term2, "ID");
+            }
 
             switch (operator) {
             case "+":
@@ -674,29 +680,8 @@ public class Proj {
                 break;
             }
 
-            printStore(file, functionTable, accessName);
+            printVariableStore(file, functionTable, accessName);
         }
-    }
-
-    public void printLoad(PrintWriter file, SymbolTable functionTable, String term) {
-        Symbol variable = functionTable.getFromAll(term);
-
-        if (variable == null)
-            file.println("  iload " + term);
-        else
-            file.println("  iload_" + variable.getRegister());
-
-        //TODO: aload, iaload (arrays)
-    }
-
-    public void printStore(PrintWriter file, SymbolTable functionTable, String access) {
-        Symbol variable = functionTable.getFromAll(access);
-        if (variable == null)
-            file.println("  istore_" + access);
-        else
-            file.println("  istore_" + variable.getRegister());
-
-        //TODO: astore, iastore (arrays)
     }
 
     public String getTerm(ASTTerm term) {
@@ -762,6 +747,23 @@ public class Proj {
         }
     }
 
+    public void printVariableInc(PrintWriter file, SymbolTable functionTable, String termVariable, String operator, String termNumber) {
+
+        Symbol variable = functionTable.getFromAll(termVariable);
+        if (variable != null) { //Local Variables
+            file.println("  iinc " + variable.getRegister() + operator + termNumber);
+
+        } else { //Global variable             
+            Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(termVariable);
+            if (globalVariable != null) {
+                String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
+
+                file.println("  iinc " + this.moduleName + "/" + globalVariable.getName() + operator + termNumber);
+            }
+
+        }
+    }
+
     public void printVariableStore(PrintWriter file, SymbolTable functionTable, String name) {
 
         Symbol variable = functionTable.getFromAll(name);
@@ -770,7 +772,7 @@ public class Proj {
 
         } else { //Global variable             
             Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
-            if(globalVariable!=null){
+            if (globalVariable != null) {
                 String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
 
                 file.println("  putstatic " + this.moduleName + "/" + globalVariable.getName() + globalVariableType);
@@ -781,7 +783,7 @@ public class Proj {
 
     public void printVariableLoad(PrintWriter file, SymbolTable functionTable, String name, String type) {
 
-        if(type.equals("ID")){
+        if (type.equals("ID")) {
             Symbol variable = functionTable.getFromAll(name);
             if (variable != null) { //Local Variables
                 file.println("  iload " + variable.getRegister());
@@ -791,15 +793,14 @@ public class Proj {
             } else { //Global variable             
                 Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
 
-                if(globalVariable!=null){
+                if (globalVariable != null) {
                     String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
 
                     file.println("  getstatic " + this.moduleName + "/" + globalVariable.getName() + globalVariableType);
                 }
 
             }
-        }
-        else if(type.equals("Integer")){
+        } else if (type.equals("Integer")) {
 
             int number = Integer.parseInt(name);
 
@@ -808,12 +809,11 @@ public class Proj {
             else
                 file.println("  bipush " + number);
 
-        }
-        else if(type.equals("String")){
+        } else if (type.equals("String")) {
 
-            file.println("  ldc " + name) ;
+            file.println("  ldc " + name);
         }
-      
+
     }
 
     public void semanticAnalysis(SimpleNode root) {
