@@ -97,7 +97,7 @@ void Function() : {Token s1,s2; errorIn = "FUNCTION()";}
 {
 
     try {
-       <FUNCTION> s1=<ID> ( ( FunctionReturn(s1) <ASSIGN> s2=<ID> {jjtThis.name = s2.image;} <LPAR> (Varlist())? <RPAR> ) | (<LPAR> ( Varlist() )? <RPAR> {jjtThis.name = s1.image;}) )
+       <FUNCTION> s1=<ID> ( ( FunctionReturn(s1) <ASSIGN> s2=<ID> {jjtThis.name = s2.image;} <LPAR> (Varlist())? <RPAR> ) | (<LPAR> ( Varlist() )? <RPAR> {jjtThis.name = s1.image; jjtThis.line = s1.beginLine;}) )
     } catch (ParseException e) {
         System.out.print(e.toString());
         skip_to(RPAR);
@@ -141,7 +141,7 @@ void ArrayElement() : {}
 
 void Element() : {Token s;}
 {
-    s=<ID> {jjtThis.name = s.image;}
+    s=<ID> {jjtThis.name = s.image; jjtThis.line = s.beginLine;}
     (ArrayElement())?
 }
 
@@ -271,7 +271,7 @@ void If() : {errorIn = "IF()";}
 //Call ::= <ID> ( "." <ID> )? <LPAR> ( ArgumentList )? <RPAR>
 void Call() : {Token s1,s2;} 
 {
-        s1=<ID> {jjtThis.function = s1.image;}
+        s1=<ID> {jjtThis.function = s1.image; jjtThis.line = s1.beginLine;}
         ( "." 
         s2=<ID> {jjtThis.module = jjtThis.function; jjtThis.function = s2.image;}
         )? <LPAR> ( ArgumentList() )? <RPAR>

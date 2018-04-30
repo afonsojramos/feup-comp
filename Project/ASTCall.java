@@ -3,6 +3,7 @@
 public class ASTCall extends SimpleNode {
   public String module = "";
   public String function = "";
+  public int line = 0;
 
   public ASTCall(int id) {
     super(id);
