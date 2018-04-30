@@ -166,7 +166,6 @@ public class Proj {
                 }
             }
         }
-        //printSymbolTables();
     }
 
     public void saveFunctionVariables(SymbolTable functionSymbolTable, Node node) {
@@ -508,11 +507,18 @@ public class Proj {
 
         //function header
 
+        ASTArgumentList arguments = null;
+
+        for(int i = 0; i < function.jjtGetNumChildren(); i++){
+            if(function.jjtGetChild(i) instanceof ASTArgumentList)
+                arguments = (ASTArgumentList) function.jjtGetChild(i);
+        }
+
         file.print("\n.method public static ");
         if (function.name.equals("main")) {
             file.print("main([Ljava/lang/String;)V\n");
         } else {
-            file.print(functionHeader(function.name)+"\n");
+            file.print(functionHeader(function.name,arguments)+"\n");
         }
 
         //function limits
@@ -560,31 +566,50 @@ public class Proj {
 
     }
 
-    public String functionHeader(String functionName) {
+    public String functionHeader(String functionName, ASTArgumentList arguments) {
 
         SymbolTable functionTable = this.symbolTables.get(functionName);
 
         String functionHeader = functionName + "(";
 
-        for (Map.Entry<String, Symbol> entry : functionTable.getParameters().entrySet()) {
+        if(arguments!= null){
+            for (int i = 0; i < arguments.jjtGetNumChildren(); i++){
 
-            String type = entry.getValue().getType();
-
-            if (type.equals("array"))
-                functionHeader = functionHeader + "[I";
-            else
-                functionHeader = functionHeader + "I";
+                ASTArgument argument = (ASTArgument) arguments.jjtGetChild(i);
+    
+                if (argument.type.equals("ID")){
+    
+                    if(functionTable != null && functionTable.getParameters().get(argument.name)!=null){
+    
+                        String type =  functionTable.getParameters().get(argument.name).getType();
+    
+                        if(type.equals("array")){
+                            functionHeader = functionHeader + "[I";
+                        }
+                        else functionHeader = functionHeader + "I";
+                    }
+                    else  functionHeader = functionHeader + "I";
+                }  
+                else if (argument.type.equals("String"))
+                    functionHeader = functionHeader + "java/lang/String;";
+    
+            }
         }
+       
 
-        Symbol returnSymbol = functionTable.getReturnSymbol();
+        if(functionTable != null && functionTable.getReturnSymbol() != null){
+            Symbol returnSymbol = functionTable.getReturnSymbol();
 
-        if (returnSymbol != null) {
-            if (returnSymbol.getType().equals("int"))
-                functionHeader = functionHeader + ")I";
-            else if (returnSymbol.getType().equals("array"))
-                functionHeader = functionHeader + ")[I";
-        } else
-            functionHeader = functionHeader + ")V";
+            if (returnSymbol != null) {
+                if (returnSymbol.getType().equals("int"))
+                    functionHeader = functionHeader + ")I";
+                else if (returnSymbol.getType().equals("array"))
+                    functionHeader = functionHeader + ")[I";
+            } else
+                functionHeader = functionHeader + ")V";
+        }
+        else functionHeader = functionHeader + ")V";
+
 
         return functionHeader;
     }
@@ -623,9 +648,11 @@ public class Proj {
         } else if (node instanceof ASTCall) { //CALLS
             ASTCall call = (ASTCall) node;
 
+            ASTArgumentList argumentList = null;
+
                 if(call.jjtGetNumChildren() > 0 && call.jjtGetChild(0) instanceof ASTArgumentList){ //function has arguments
 
-                    ASTArgumentList argumentList = (ASTArgumentList) call.jjtGetChild(0);
+                    argumentList = (ASTArgumentList) call.jjtGetChild(0);
     
                     for(int i = 0; i < argumentList.jjtGetNumChildren(); i++){
     
@@ -635,20 +662,12 @@ public class Proj {
     
                     }
                 }
-                if (call.module.equals("") && symbolTables.get(call.function)!=null) {
-                    file.println("  invokestatic " + this.moduleName + "/" + functionHeader(call.function));
-                } else {
-                    file.print("  invokestatic " + call.module +"/" + call.function);
 
-                    //TODO: for arguments
-    
-                    /*if (call.jjtGetChild(0).jjtGetNumChildren() == 2){
-                        file.println("(Ljava/lang/String;I)V");                            
-                    }
-                    else{
-                        file.println("(Ljava/lang/String)V");                            
-                    }*/   
-                }
+                if (call.module.equals("") && symbolTables.get(call.function)!=null) {
+                    file.println("  invokestatic " + this.moduleName + "/" + functionHeader(call.function, argumentList));
+                } else {
+                    file.print("  invokestatic " + call.module +"/" + functionHeader(call.function, argumentList));
+                }     
 
         } else if (node instanceof ASTWhile) { // WHILE
             for (int i = 1; i < node.jjtGetNumChildren(); i++) { //TODO: comecar em 0 e analidar o expression
