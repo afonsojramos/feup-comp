@@ -1,0 +1,11 @@
+module m{
+	
+	function f(){
+		x = 6;
+		while( x < 10){
+			y = 7;
+		}
+		x = y;
+		
+	}
+}

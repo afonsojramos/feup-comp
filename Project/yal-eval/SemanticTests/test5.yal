@@ -1,0 +1,13 @@
+module aval6_err
+{
+x1; 
+x2;
+x2 = 8;
+x4;
+function a=sqrt(vsqn, ad) { 
+	x1 = 6;
+	x3 = 4;
+     	x3 = 8;
+}
+
+}

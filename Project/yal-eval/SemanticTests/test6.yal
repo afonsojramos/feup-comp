@@ -1,0 +1,15 @@
+module aval6_err
+{
+
+function a=sqrt(x1, x2, x3[]) { 
+	a = 4;
+	b = 2;
+	a(4, "ola", c); //error
+	a(b, b, 4); //error
+	sqrt(a, a, a); //error
+	c = [a];
+	sqrt(a, b, c); //no error
+	io.print("ola");
+}
+
+}

@@ -1,0 +1,29 @@
+module test3{
+  x1 = 6;
+  
+ function a = olamundo(a[], b, c[]){
+ 
+ }
+ 
+ function g(){
+ 
+ }
+ 
+ function k(a, b, c[]){
+ 	
+ }
+
+ function a[] = olamundo(a[], b, c[]){
+
+ }
+
+ function b[] = olamundo(x[], y, z[]){ //error
+
+ }
+
+ function c[] = olamundo(x[], y[], z[]){//no error
+
+ }
+
+ 
+}

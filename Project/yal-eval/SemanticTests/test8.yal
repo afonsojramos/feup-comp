@@ -1,0 +1,25 @@
+module m{
+	
+	function a = f1(x){
+		a = 2;
+	}
+	
+	function a[] = f2(x){
+		a = [6];
+	}	
+
+	function f3(x){
+
+	}
+	
+	function f(){
+		x1 = [8];
+		x2 = 4;
+		x3 = f1(4); //no error
+		x1 = f1(4); //no error
+		x1 = f2(4); //no error
+		x2 = f2(4); //error
+		x6 = f3(5); //error
+	}
+
+}

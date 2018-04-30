@@ -1,0 +1,13 @@
+module m{
+	function f(){
+		a = 4;
+		if( a < 4){
+			x = 6;
+		}
+		else{
+			x = [5];
+		}
+	
+		b = x;
+	}
+}
