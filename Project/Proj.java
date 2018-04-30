@@ -236,7 +236,7 @@ public class Proj {
                                 if (functionSymbolTable.getFromAll(name) == null)
                                     System.out.println("\nLINE " + call.line + " NEW VAR = " + name);
                                 
-                                if (this.symbolTables.get(call.function) != null)
+                                if (this.symbolTables.get(call.function) != null && this.symbolTables.get(call.function).getReturnSymbol()!=null)
                                     System.out.println(this.symbolTables.get(call.function).getReturnSymbol().getType());
 
                                 if (this.symbolTables.get(call.function) != null && functionSymbolTable.getFromAll(name) != null)
@@ -565,11 +565,9 @@ public class Proj {
         SymbolTable functionTable = this.symbolTables.get(functionName);
 
         String functionHeader = functionName + "(";
-        System.out.println("Function: " + functionName);
 
         for (Map.Entry<String, Symbol> entry : functionTable.getParameters().entrySet()) {
 
-            System.out.println("Param: " + entry.getKey());
             String type = entry.getValue().getType();
 
             if (type.equals("array"))
@@ -625,7 +623,6 @@ public class Proj {
         } else if (node instanceof ASTCall) { //CALLS
             ASTCall call = (ASTCall) node;
 
-            if(symbolTables.get(call.function)!=null){
                 if(call.jjtGetNumChildren() > 0 && call.jjtGetChild(0) instanceof ASTArgumentList){ //function has arguments
 
                     ASTArgumentList argumentList = (ASTArgumentList) call.jjtGetChild(0);
@@ -638,31 +635,20 @@ public class Proj {
     
                     }
                 }
-    
-                if (call.module.equals("")) {
+                if (call.module.equals("") && symbolTables.get(call.function)!=null) {
                     file.println("  invokestatic " + this.moduleName + "/" + functionHeader(call.function));
                 } else {
+                    file.print("  invokestatic " + call.module +"/" + call.function);
+
+                    //TODO: for arguments
     
-                    if(call.jjtGetNumChildren() > 0){
-                        if (call.module.equals("io") && call.function.equals("println")) {
-    
-                            file.print("  invokestatic io/println");
-    
-                            if (call.jjtGetChild(0).jjtGetNumChildren() == 2){
-                                file.println("(Ljava/lang/String;I)V");                            
-                            }
-                            else{
-                                file.println("(Ljava/lang/String)V");                            
-                            }    
-                        }
+                    /*if (call.jjtGetChild(0).jjtGetNumChildren() == 2){
+                        file.println("(Ljava/lang/String;I)V");                            
                     }
                     else{
-                        file.println("  invokestatic io/println()V");
-                    }
-                   
-    
+                        file.println("(Ljava/lang/String)V");                            
+                    }*/   
                 }
-            }
 
         } else if (node instanceof ASTWhile) { // WHILE
             for (int i = 1; i < node.jjtGetNumChildren(); i++) { //TODO: comecar em 0 e analidar o expression
