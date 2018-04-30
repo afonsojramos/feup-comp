@@ -142,8 +142,15 @@ public class Proj {
 
                         //Parameters
                         if (function.jjtGetChild(j) instanceof ASTVarlist) {
+							ArrayList<String> names = new ArrayList<String>();
                             for (int k = 0; k < function.jjtGetChild(j).jjtGetNumChildren(); k++) {
-                                ASTElement element = (ASTElement) function.jjtGetChild(j).jjtGetChild(k);
+								ASTElement element = (ASTElement) function.jjtGetChild(j).jjtGetChild(k);
+								
+								if(names.contains(element.name))
+									printSemanticError(element.name, element.line, "Repeated argument.");
+
+								names.add(element.name);
+
                                 if (element.jjtGetNumChildren() == 1) {
                                     if (functionSymbolTable.addParameter(element.name, "array", this.registerCounter))
                                         this.registerCounter++;
@@ -343,7 +350,7 @@ public class Proj {
     public void argumentsAnalysis(SymbolTable functionSymbolTable, Node node) {
 
         if (node instanceof ASTCall) {
-            ASTCall call = (ASTCall) node;
+			ASTCall call = (ASTCall) node;
 
             if (this.symbolTables.get(call.function) == null && call.module.compareTo("io") != 0)//Excludes io module
                 printSemanticError(call.function, call.line, "Function not declared."); 
