@@ -46,7 +46,7 @@ module semantictest {
  
     function calltest() {
  
-        c(a);                                           // err9 c() not declared
+        c(j);                                           // err9 c() not declared
         scalar = c(arr) + not();                        // err10 err11 err12 c() not declared, not() not declared, return types invalid for operation
         scalar = f();                                   // err13 assign scalar to array return
         a = f();

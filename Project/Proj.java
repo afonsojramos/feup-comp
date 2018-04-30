@@ -232,20 +232,28 @@ public class Proj {
 
                             if (term.jjtGetNumChildren() > 0 && term.jjtGetChild(0) instanceof ASTCall) {
                                 ASTCall call = (ASTCall) term.jjtGetChild(0);
+
+                                if (functionSymbolTable.getFromAll(name) == null)
+                                    System.out.println("\nLINE " + call.line + " NEW VAR = " + name);
                                 
-                                
+                                if (this.symbolTables.get(call.function) != null)
+                                    System.out.println(this.symbolTables.get(call.function).getReturnSymbol().getType());
+
+                                if (this.symbolTables.get(call.function) != null && functionSymbolTable.getFromAll(name) != null)
+                                    System.out.println(this.symbolTables.get(call.function).getReturnSymbol().getType() + " = " + functionSymbolTable.getFromAll(name).getType());
+                                    
                                 if (this.symbolTables.get(call.function) != null && functionSymbolTable.getFromAll(name) != null && functionSymbolTable.getFromAll(name).getType() != this.symbolTables.get(call.function).getReturnSymbol().getType())
                                         printSemanticError(call.function, call.line, "Fuction type mismatch.");
 
                                 argumentsAnalysis(functionSymbolTable, call);
 
-                                if (functionSymbolTable != null)
-                                    if(functionSymbolTable.getReturnSymbol() != null){
+                                if (this.symbolTables.get(call.function) != null){
+                                    if (this.symbolTables.get(call.function).getReturnSymbol() != null)
                                         if (call.module.equals("")) //if the functions belongs to this module
-                                            type = functionSymbolTable.getReturnSymbol().getType(); //gets that function return type
+                                            type = this.symbolTables.get(call.function).getReturnSymbol().getType(); //gets that function return type
                                         else
                                             type = "int"; //otherwise it's int
-                                    }
+                                }
                                
                             } else {
                                 for (int k = 0; k < term.jjtGetNumChildren(); k++) {
@@ -289,7 +297,11 @@ public class Proj {
                 }
             }
 
+            System.out.println("TYPE: " + type);
+            
             if (canAddVariable(functionSymbolTable, name, type, this.registerCounter)) {
+                System.out.println("TYPE2: " + type);
+
                 if (functionSymbolTable.addVariable(name, type, this.registerCounter))
                     this.registerCounter++;
             }
@@ -368,8 +380,7 @@ public class Proj {
 
     public boolean canAddVariable(SymbolTable functionSymbolTable, String name, String type, int registerCounter) {
 
-        if (!this.symbolTables.get(this.moduleName).getVariables()
-                .containsValue(new Symbol(name, type, registerCounter))) {//verify if the new symbol isn't on the module symbol table already
+        if (!this.symbolTables.get(this.moduleName).getVariables().containsValue(new Symbol(name, type, registerCounter))) {//verify if the new symbol isn't on the module symbol table already
             if (!functionSymbolTable.getParameters().containsValue(new Symbol(name, type, registerCounter))) { //verify if the new symbol isn't on the function's parameters already
                 if (functionSymbolTable.getReturnSymbol() != null) { //if the function returns a symbol
                     if (!functionSymbolTable.getReturnSymbol().equals(new Symbol(name, type, registerCounter))) // if the return symbol isnt't the new one
