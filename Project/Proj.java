@@ -944,7 +944,6 @@ public class Proj {
     }
 
     public void printSemanticError(String var, int line, String error) {
-        errorCount++;
-        System.out.println( ANSI_RED + "Semantic Error nº" + errorCount + "!\n" + ANSI_YELLOW + "Line " + ANSI_CYAN + line + ANSI_RESET + " : " + var + " -> " + error);
+        System.out.println( ANSI_RED + "Semantic Error nº" + ++errorCount + "!\n" + ANSI_YELLOW + "Line " + ANSI_CYAN + line + ANSI_RESET + " : " + var + " -> " + error);
     }
 }
