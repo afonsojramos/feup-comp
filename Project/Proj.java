@@ -312,7 +312,7 @@ public class Proj {
                                         }
 
                                         if ((functionSymbolTable.getAcessType(access.name) != type && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type) && !deepAccess)
-                                            printSemanticError(access.name, access.line, "Type mismatch.....");
+                                            printSemanticError(access.name, access.line,"This variable is an array, operations can only be done with scalars.");   
                                     }
                                 }
                             }
