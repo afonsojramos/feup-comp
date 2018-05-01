@@ -102,7 +102,7 @@ module semantictest {
         newarr = [nope.size];                           // err29 undeclared variable
         myscal = notdecl + arr[notdecl2];               // err30 err31 undeclared variables + TODO Extra Type mismatch (probably same error as 99)
         myscal = scalar(global, arr) ^ undecl;          // err32 undeclared variable + TODO Extra Type mismatch (probably same error as 99)
-        notarray[0] = global + myscal;                  // err33 undeclared array access on LHS TODO
+        notarray[0] = global + myscal;                  // err33 undeclared array access on LHS
 
         arr[undecl] = 5;                                // err34 undeclared index
 
