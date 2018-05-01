@@ -221,6 +221,10 @@ public class Proj {
                         if (access.jjtGetChild(j) instanceof ASTArrayAccess) {
                             ASTArrayAccess arrayAccess = (ASTArrayAccess) access.jjtGetChild(j);
 
+                            if (functionSymbolTable.getFromAll(name)==null && this.symbolTables.get(this.moduleName).getFromAll(name)==null){
+                                printSemanticError(access.name, access.line, "Undefined array");
+                            }
+
                             for (int k = 0; k < arrayAccess.jjtGetNumChildren(); k++) {
                                 if (arrayAccess.jjtGetChild(k) instanceof ASTIndex) {
                                     ASTIndex index = (ASTIndex) arrayAccess.jjtGetChild(k);
