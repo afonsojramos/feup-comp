@@ -30,7 +30,7 @@ public class Proj {
             System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " Reading input ...");
             parser = new yal2jvm(System.in);
         } else if (args.length == 1 || args.length == 2) {
-            if (args[1].toString().equals("color")){
+            if (args.length == 2 && args[1].toString().equals("color")){
                 ANSI_RESET = "\u001B[0m";
                 ANSI_RED = "\u001B[31m";
                 ANSI_GREEN = "\u001B[32m";
@@ -374,9 +374,7 @@ public class Proj {
                 else {
                     Iterator it = ifVarlist.entrySet().iterator();
                     while (it.hasNext()) {
-                        Map.Entry pair = (Map.Entry)it.next();
-                        Symbol removed = (Symbol) pair.getValue();
-                        System.out.println(pair.getKey() + " = " + removed.getType());
+                        it.next();
                         it.remove(); // avoids a ConcurrentModificationException
                     }
                     functionSymbolTable.addVariable(name, type);
