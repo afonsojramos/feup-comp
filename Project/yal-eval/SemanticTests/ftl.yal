@@ -94,7 +94,7 @@ module semantictest {
         newarr = [20];
         newarr = 5 + scalar(global, arr);
         newarr = arr ^ myscal;                          // err27 array on operation
-        newarr = myscal & f();                          // err28 array on operation TODO
+        newarr = myscal & f();                          // err28 array on operation
        
         newarr = arr;                                   // TODO SHOULD NOT BE ERROR (Global defined as int???)
         myscal = arr[myscal] * arr[0];

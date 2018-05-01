@@ -64,7 +64,7 @@ public class Proj {
             root.dump("");
             buildSymbolTables(root);
             fillFunctionSymbolTables(root);
-            if(errorCount == 0) //if there weren't any semantic errors
+            if(errorCount == 0) //if there weren't any semantic erros
                 yalToJasmin(root);
             System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_GREEN + " The input was read sucessfully." + ANSI_RESET);
         } catch (ParseException e) {
@@ -260,11 +260,19 @@ public class Proj {
 
                                 if (this.symbolTables.get(call.function) != null){
                                     if (this.symbolTables.get(call.function).getReturnSymbol() != null)
-                                        if (call.module.equals("")) //if the functions belongs to this module
+                                        if (call.module.equals("")){ //if the functions belongs to this module
                                             type = this.symbolTables.get(call.function).getReturnSymbol().getType(); //gets that function return type
+                                            if(!rhs.operator.equals("")){
+                                                if(type.equals("array")){
+                                                    printSemanticError(call.function, call.line, "This variable is an array, operations can only be done with scalars.");
+                                                }
+                                            }    
+                                        } 
                                         else
                                             type = "int"; //otherwise it's int
                                 }
+
+                               
                                
                             } else {
                                 for (int k = 0; k < term.jjtGetNumChildren(); k++) {
@@ -464,11 +472,11 @@ public class Proj {
     public PrintWriter getFile() {
 
         try {
-            File dir = new File("jvm");
+            File dir = new File("jasmin");
             if (!dir.exists())
                 dir.mkdirs();
 
-            File file = new File("jvm/" + this.moduleName + ".jvm");
+            File file = new File("jasmin/" + this.moduleName + ".j");
             if (!file.exists())
                 file.createNewFile();
 
