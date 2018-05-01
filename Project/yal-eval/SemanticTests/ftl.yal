@@ -83,8 +83,8 @@ module semantictest {
     function scal=moreerrors() {
    
         scal = 2;
-        newscal = scal.size + 5;                        // err23 .size on scalar TODO
-        arr.size = 5;                                   // err24 .size on LHS TODO
+        newscal = scal.size + 5;                        // err23 .size on scalar
+        arr.size = 5;                                   // err24 .size on LHS
        
         myscal = 2;
         myscal = [20];                                  // err25 already a scalar

@@ -209,6 +209,11 @@ public class Proj {
                                 }
                             }
                         }
+                        if (access.jjtGetChild(j) instanceof ASTSizeAccess) {
+
+                            printSemanticError(access.name, access.line, "Size is a property, not a variable.");
+                            
+                        }
                     }
                 }
 
@@ -223,7 +228,7 @@ public class Proj {
                                 printSemanticError(arraySize.name, arraySize.line, "Undefined variable.");
                            
                             if (functionSymbolTable.getAcessType(name) == "int" || this.symbolTables.get(this.moduleName).getAcessType(name) == "int") //Variable previously defined as integer
-                                printSemanticError(arraySize.name, arraySize.line, "Variable previously defined.");
+                                printSemanticError(arraySize.name, arraySize.line, "Variable previously defined as another type.");
 
                             type = "array";
 
@@ -283,8 +288,13 @@ public class Proj {
                                                     }
                                                 }
                                             }
-                                            if (access.jjtGetChild(l) instanceof ASTSizeAccess) 
+                                            if (access.jjtGetChild(l) instanceof ASTSizeAccess) {
+
+                                                if (functionSymbolTable.getAcessType(access.name) == "int" || this.symbolTables.get(this.moduleName).getAcessType(access.name) == "int") //Variable previously defined as integer
+                                                    printSemanticError(access.name, access.line, "This variable is a scalar, not an array.");
+
                                                 deepAccess = true;
+                                            }
                                         }
 
                                         if ((functionSymbolTable.getAcessType(access.name) != type && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type) && !deepAccess)
