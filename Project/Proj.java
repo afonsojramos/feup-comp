@@ -533,7 +533,7 @@ public class Proj {
             if (!dir.exists())
                 dir.mkdirs();
 
-            File file = new File("jasmin/" + this.moduleName + ".j");
+            File file = new File("jasmin/" + this.moduleName.substring(9) + ".j");
             if (!file.exists())
                 file.createNewFile();
 
