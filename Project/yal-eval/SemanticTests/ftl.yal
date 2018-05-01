@@ -128,4 +128,23 @@ module semantictest {
 
 
     }
+
+    function letsgoforifs() {
+
+        m = 1;
+        
+        if(m==1) {
+		    n=[20];
+        } else {
+            n=2;
+        }
+        o = n;
+
+        if(m==1) {
+            o=3;
+        } else {
+            p=2;
+        }
+        o = p;
+    }
 }
