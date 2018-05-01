@@ -3,10 +3,9 @@ public class Symbol {
     private String type;
     private int register; //if it is -1, means it's a global variable
 
-    public Symbol(String name, String type, int register) {
+    public Symbol(String name, String type) {
         this.name = name;
         this.type = type; //"array" or "int"
-        this.register = register;
     }
 
     public String getName() {
@@ -19,6 +18,10 @@ public class Symbol {
 
     public int getRegister() {
         return this.register;
+    }
+
+    public void setRegister(int register) {
+        this.register = register;
     }
 
     public boolean equals(Object symbol) {

@@ -1,9 +1,11 @@
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class SymbolTable {
     private LinkedHashMap<String, Symbol> parameters;
     private LinkedHashMap<String, Symbol> variables;
     private Symbol returnSymbol = null;
+    private int registerCounter;
 
     public SymbolTable() {
         this.parameters = new LinkedHashMap<String, Symbol>();
@@ -22,29 +24,29 @@ public class SymbolTable {
         return this.returnSymbol;
     }
 
-    public void setReturnSymbol(String name, String type, int register) {
-        Symbol s = new Symbol(name, type, register);
+    public void setReturnSymbol(String name, String type) {
+        Symbol s = new Symbol(name, type);
         this.returnSymbol = s;
     }
 
-    public boolean addParameter(String name, String type, int register) {
+    public boolean addParameter(String name, String type) {
 
         if (this.parameters.containsKey(name)) {
             return false;
         } else {
-            Symbol s = new Symbol(name, type, register);
+            Symbol s = new Symbol(name, type);
             this.parameters.put(name, s);
             return true;
         }
 
     }
 
-    public boolean addVariable(String name, String type, int register) {
+    public boolean addVariable(String name, String type) {
 
         if (this.variables.containsKey(name)) {
             return false;
         } else {
-            Symbol s = new Symbol(name, type, register);
+            Symbol s = new Symbol(name, type);
             this.variables.put(name, s);
             return true;
         }
@@ -80,5 +82,39 @@ public class SymbolTable {
         }
 
         return "";
+    }
+
+    public void setRegisters(String functionName){
+        int registerCounter;
+
+        if(functionName.equals("main"))
+            registerCounter = 1;
+        else registerCounter = 0;
+
+        //System.out.println("FUNCTION: " + functionName);
+
+        //System.out.println("PARAMETERS:");
+        for (Map.Entry<String, Symbol> entry : this.parameters.entrySet()) {
+            Symbol symbol = entry.getValue();
+            symbol.setRegister(registerCounter);
+            //System.out.println(symbol.getName() + " - " + symbol.getRegister());
+            registerCounter ++;
+        }
+
+        //System.out.println("VARIABLES:");
+        for (Map.Entry<String, Symbol> entry : this.variables.entrySet()) {
+            Symbol symbol = entry.getValue();
+            symbol.setRegister(registerCounter);
+            //System.out.println(symbol.getName() + " - " + symbol.getRegister());
+            registerCounter ++;
+        }
+
+        if(this.returnSymbol != null){
+            //System.out.println("RETURN:");
+            this.returnSymbol.setRegister(registerCounter);
+            //System.out.println(this.returnSymbol.getName() + " - " + this.returnSymbol.getRegister());
+            
+        }
+           
     }
 }
