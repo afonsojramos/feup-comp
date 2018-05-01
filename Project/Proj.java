@@ -19,6 +19,7 @@ public class Proj {
     public static String fileName = "";
 
     private HashMap<String, SymbolTable> symbolTables = new HashMap<String, SymbolTable>();
+    private HashMap<String, Symbol> ifVarlist = new HashMap<String, Symbol>();
     private String moduleName;
     private int errorCount = 0;
 
@@ -100,7 +101,7 @@ public class Proj {
                             globalSymbolTable.addVariable(element.name, "int");
                         }
                     }
-                    //functions
+                //functions
                 } else if (module.jjtGetChild(i) instanceof ASTFunction) {
                     ASTFunction function = (ASTFunction) module.jjtGetChild(i);
 
@@ -350,7 +351,33 @@ public class Proj {
             } 
 
             if (canAddVariable(functionSymbolTable, name, type)) {
-                functionSymbolTable.addVariable(name, type);
+                if (assign.parent instanceof ASTWhile || assign.parent instanceof ASTIf){
+                    System.out.println("SOU FILHO DO IF");
+                    ifVarlist.put(name, new Symbol(name, type));
+                }
+                else if (assign.parent instanceof ASTElse){
+                    System.out.println("SOU FILHO DO ELSE");
+                    if (ifVarlist.get(name) != null && ifVarlist.get(name).getType() != type){
+                        printSemanticError(name, assign.line, "WRONG TYPE");
+                    }
+                    else if (ifVarlist.get(name) != null){
+                        functionSymbolTable.addVariable(name, type);
+                    }
+                    else {
+                        printSemanticError(name, assign.line, "Variable has to be in if and else");
+                    }
+                }                
+                else {
+                    Iterator it = ifVarlist.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry pair = (Map.Entry)it.next();
+                        Symbol removed = (Symbol) pair.getValue();
+                        System.out.println(pair.getKey() + " = " + removed.getType());
+                        it.remove(); // avoids a ConcurrentModificationException
+                    }
+                    functionSymbolTable.addVariable(name, type);
+                }
+
             }
         }
 
