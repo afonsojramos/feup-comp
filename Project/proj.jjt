@@ -97,7 +97,7 @@ void Function() : {Token s1,s2; errorIn = "FUNCTION()";}
 {
 
     try {
-       <FUNCTION> s1=<ID> ( ( FunctionReturn(s1) <ASSIGN> s2=<ID> {jjtThis.name = s2.image;} <LPAR> (Varlist())? <RPAR> ) | (<LPAR> ( Varlist() )? <RPAR> {jjtThis.name = s1.image; jjtThis.line = s1.beginLine;}) )
+       <FUNCTION> s1=<ID> ( ( FunctionReturn(s1) <ASSIGN> s2=<ID> {jjtThis.name = s2.image; jjtThis.line = s2.beginLine;} <LPAR> (Varlist())? <RPAR> ) | (<LPAR> ( Varlist() )? <RPAR> {jjtThis.name = s1.image; jjtThis.line = s1.beginLine;}) )
     } catch (ParseException e) {
         System.out.print(e.toString());
         skip_to(RPAR);
@@ -167,10 +167,10 @@ void Stmt() #void : {errorIn = "CALL()";}
 }
 
 //Assign ::= Lhs <ASSIGN> Rhs <PVIRG>
-void Assign() : {errorIn = "ASSIGN()";}
+void Assign() : {Token s; errorIn = "ASSIGN()";}
 {
     try {
-        Lhs() <ASSIGN> 
+        Lhs() s=<ASSIGN> {jjtThis.line = s.beginLine;} 
     } catch (ParseException e) {
         System.out.print(e.toString());
         Token t;

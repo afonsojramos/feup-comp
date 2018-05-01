@@ -6,6 +6,7 @@ public class SymbolTable {
     private LinkedHashMap<String, Symbol> variables;
     private Symbol returnSymbol = null;
     private int registerCounter;
+    private boolean returned = false;
 
     public SymbolTable() {
         this.parameters = new LinkedHashMap<String, Symbol>();
@@ -24,9 +25,17 @@ public class SymbolTable {
         return this.returnSymbol;
     }
 
+    public Boolean getReturned() {
+        return this.returned;
+    }
+
     public void setReturnSymbol(String name, String type) {
         Symbol s = new Symbol(name, type);
         this.returnSymbol = s;
+    }
+
+    public void setReturned(Boolean returned) {
+        this.returned=returned;
     }
 
     public boolean addParameter(String name, String type) {

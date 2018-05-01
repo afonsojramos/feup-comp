@@ -109,12 +109,12 @@ module semantictest {
         anotherarr = [N];                               // err35 undeclared variable used as size
     }
    
-    function nope=noreturn() {                          // err36 return type not declared in locals / params / globals TODO
+    function nope=noreturn() {                          // err36 return type not declared in locals / params / globals
    
         myscal = 5;
     }
    
-    function nope[]=wrongtype() {                       // err37 return type mismatch TODO
+    function nope[]=wrongtype() {                       // err37 return type mismatch
    
         nope = 5;
     }

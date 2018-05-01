@@ -151,6 +151,9 @@ public class Proj {
                             functionSymbolTable.addParameter(element.name, "int");
                         }
 
+                        if(functionSymbolTable.getReturnSymbol()!=null && element.name.equals(functionSymbolTable.getReturnSymbol().getName()))
+                            functionSymbolTable.setReturned(true);
+
                     }
                 }
             }
@@ -177,6 +180,8 @@ public class Proj {
                             argumentsAnalysis(functionSymbolTable, function.jjtGetChild(j));
                     }
 
+                    if(functionSymbolTable.getReturnSymbol()!= null && !functionSymbolTable.getReturned())
+                        printSemanticError(functionSymbolTable.getReturnSymbol().getName(), function.line, "Return type not declared");
                 }
             }
         }
@@ -312,14 +317,21 @@ public class Proj {
                                         }
 
                                         if ((functionSymbolTable.getAcessType(access.name) != type && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type) && !deepAccess)
-                                            printSemanticError(access.name, access.line,"This variable is an array, operations can only be done with scalars.");   
-                                    }
-                                }
+                                            printSemanticError(access.name, access.line,"This variable is an array, operations can only be done with scalars.");           
+                                        
+                                    } 
+                                } 
                             }
                         }
                     }
                 }
             }
+
+            if(functionSymbolTable.getReturnSymbol()!=null && name.equals(functionSymbolTable.getReturnSymbol().getName())){
+                functionSymbolTable.setReturned(true);
+                if(!type.equals(functionSymbolTable.getReturnSymbol().getType()))
+                    printSemanticError(name, assign.line,"Return type mismatch.");                    
+            }              
 
             if (canAddVariable(functionSymbolTable, name, type)) {
                 functionSymbolTable.addVariable(name, type);
