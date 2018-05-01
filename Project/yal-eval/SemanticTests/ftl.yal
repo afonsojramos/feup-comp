@@ -146,5 +146,9 @@ module semantictest {
             p=2;
         }
         o = p;
+
+        if(m==1){
+            j=0;
+        }
     }
 }

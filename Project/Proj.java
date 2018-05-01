@@ -81,7 +81,7 @@ public class Proj {
     public void buildSymbolTables(SimpleNode root) {
         if (root != null && root instanceof ASTModule) {
             ASTModule module = (ASTModule) root;
-            this.moduleName = module.name;
+            this.moduleName = "module - " + module.name;
             SymbolTable globalSymbolTable = new SymbolTable();
 
             for (int i = 0; i < module.jjtGetNumChildren(); i++) {
@@ -114,7 +114,7 @@ public class Proj {
                     fillFunctionParametersReturn(function);
                 }
             }
-            this.symbolTables.put(module.name, globalSymbolTable);
+            this.symbolTables.put(this.moduleName, globalSymbolTable);
         }
     }
 
@@ -555,7 +555,7 @@ public class Proj {
         if (root != null && root instanceof ASTModule) {
             ASTModule module = (ASTModule) root;
 
-            file.println(".class public " + module.name);
+            file.println(".class public " + this.moduleName);
             file.println(".super java/lang/Object\n");
 
             for (int i = 0; i < module.jjtGetNumChildren(); i++) {
