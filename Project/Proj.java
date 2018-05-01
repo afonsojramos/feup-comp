@@ -20,7 +20,7 @@ public class Proj {
 
     private HashMap<String, SymbolTable> symbolTables = new HashMap<String, SymbolTable>();
     private String moduleName;
-    private int errorCount = 1;
+    private int errorCount = 0;
 
     public static void main(String args[]) throws ParseException {
         yal2jvm parser;
@@ -64,7 +64,8 @@ public class Proj {
             root.dump("");
             buildSymbolTables(root);
             fillFunctionSymbolTables(root);
-            yalToJasmin(root);
+            if(errorCount == 0) //if there weren't any semantic errors
+                yalToJasmin(root);
             System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_GREEN + " The input was read sucessfully." + ANSI_RESET);
         } catch (ParseException e) {
             System.out
@@ -907,6 +908,7 @@ public class Proj {
     }
 
     public void printSemanticError(String var, int line, String error) {
-        System.out.println( ANSI_RED + "Semantic Error nº" + errorCount++ + "!\n" + ANSI_YELLOW + "Line " + ANSI_CYAN + line + ANSI_RESET + " : " + var + " -> " + error);
+        errorCount++;
+        System.out.println( ANSI_RED + "Semantic Error nº" + errorCount + "!\n" + ANSI_YELLOW + "Line " + ANSI_CYAN + line + ANSI_RESET + " : " + var + " -> " + error);
     }
 }
