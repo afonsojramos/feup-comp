@@ -118,9 +118,9 @@ module semantictest {
 
         nope = 5;
     }
-
+   
     function a=globalmismatch() {                       // err38 return type mismatch with global array
-
+   
         a[0] = 5;
     }
 

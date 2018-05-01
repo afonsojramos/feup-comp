@@ -187,8 +187,23 @@ public class Proj {
                             argumentsAnalysis(functionSymbolTable, function.jjtGetChild(j));
                     }
 
-                    if(functionSymbolTable.getReturnSymbol()!= null && !functionSymbolTable.getReturned())
-                        printSemanticError(functionSymbolTable.getReturnSymbol().getName(), function.line, "Return type not declared");
+                    if(functionSymbolTable.getReturnSymbol()!= null){
+                        String returnName = functionSymbolTable.getReturnSymbol().getName();
+                        String returnType = functionSymbolTable.getReturnSymbol().getType();
+                        
+
+                        if(this.symbolTables.get(this.moduleName).getFromAll(returnName)!= null){    
+    
+                            if(!this.symbolTables.get(this.moduleName).getFromAll(returnName).getType().equals(returnType))
+                                printSemanticError(returnName, function.line, "Return type and global variable type don't match");
+                            
+                        }else{
+                            if(!functionSymbolTable.getReturned())
+                                printSemanticError(returnName, function.line, "Return type not declared");
+                        }
+
+                    } 
+                       
                 }
             }
         }
@@ -333,12 +348,12 @@ public class Proj {
                     }
                 }
             }
-
+            
             if(functionSymbolTable.getReturnSymbol()!=null && name.equals(functionSymbolTable.getReturnSymbol().getName())){
                 functionSymbolTable.setReturned(true);
                 if(!type.equals(functionSymbolTable.getReturnSymbol().getType()))
                     printSemanticError(name, assign.line,"Return type mismatch.");                    
-            }              
+            } 
 
             if (canAddVariable(functionSymbolTable, name, type)) {
                 functionSymbolTable.addVariable(name, type);
