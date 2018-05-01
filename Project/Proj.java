@@ -110,14 +110,14 @@ public class Proj {
                         printSemanticError(function.name, function.line, "Duplicate function.");
                     }
 
-                    fillFunctionParametersReturn(function);
+                    fillFunctionParametersReturn(function, globalSymbolTable);
                 }
             }
             this.symbolTables.put(module.name, globalSymbolTable);
         }
     }
 
-    public void fillFunctionParametersReturn(ASTFunction function){
+    public void fillFunctionParametersReturn(ASTFunction function, SymbolTable globalSymbolTable){
 
             SymbolTable functionSymbolTable = this.symbolTables.get(function.name);
 
@@ -131,6 +131,13 @@ public class Proj {
                         functionSymbolTable.setReturnSymbol(element.name, "array");
                     else
                         functionSymbolTable.setReturnSymbol(element.name, "int");
+
+                    if(globalSymbolTable.getFromAll(element.name) != null && functionSymbolTable.getReturnSymbol() != null){
+                        if(globalSymbolTable.getFromAll(element.name).getType() != functionSymbolTable.getReturnSymbol().getType()){
+                            printSemanticError(function.name, function.line, "Return type mismatch with global variable");
+                        }
+
+                    }
                 }
 
                 //Parameters
