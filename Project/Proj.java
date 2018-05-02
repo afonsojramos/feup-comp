@@ -367,11 +367,9 @@ public class Proj {
 
             /* if (canAddVariable(functionSymbolTable, name, type)) {
                 if (assign.parent instanceof ASTWhile || assign.parent instanceof ASTIf){
-                    System.out.println("SOU FILHO DO IF");
                     ifVarlist.put(name, new Symbol(name, type));
                 }
                 else if (assign.parent instanceof ASTElse){
-                    System.out.println("SOU FILHO DO ELSE");
                     if (ifVarlist.get(name) != null && ifVarlist.get(name).getType() != type){
                         printSemanticError(name, assign.line, "WRONG TYPE");
                     }
@@ -395,11 +393,9 @@ public class Proj {
 
             if (canAddVariable(functionSymbolTable, name, type)) {
                 if (assign.parent instanceof ASTIf){
-                    System.out.println("SOU FILHO DO IF");
                     functionSymbolTable.addVariable(name, type);
                 }
                 else if (assign.parent instanceof ASTElse){
-                    System.out.println("SOU FILHO DO ELSE");
                     if (functionSymbolTable.getFromAll(name) != null && functionSymbolTable.getFromAll(name).getType() != type){
                         printSemanticError(name, assign.line, "Type of Variable different from IF container.");
                         functionSymbolTable.removeVariable(name);
@@ -409,7 +405,6 @@ public class Proj {
                     }
                 }  
                 else if (assign.parent instanceof ASTWhile) {
-                    System.out.println("SOU FILHO DO WHILE");
                     functionSymbolTable.addVariable(name, type);
                 }             
                 else {
