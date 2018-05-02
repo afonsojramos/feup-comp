@@ -1,7 +1,7 @@
 public class Symbol {
     private String name = null;
     private String type;
-    private int register; //if it is -1, means it's a global variable
+    private int register;
     private boolean temporary = false;
 
     public Symbol(String name, String type) {
