@@ -654,7 +654,7 @@ public class Proj {
         if (function.name.equals("main")) {
             file.print("main([Ljava/lang/String;)V\n");
         } else {
-            file.print(functionHeader(function.name,arguments)+"\n");
+            file.print(functionHeader(function.name)+"\n");
         }
 
         //function limits
@@ -702,7 +702,42 @@ public class Proj {
 
     }
 
-    public String functionHeader(String functionName, ASTArgumentList arguments) {
+    public String functionHeader(String functionName){
+
+        SymbolTable functionTable = this.symbolTables.get(functionName);
+
+        String functionHeader = functionName + "(";
+
+        for (Map.Entry<String, Symbol> entry : functionTable.getParameters().entrySet()) {
+            Symbol symbol = entry.getValue();
+            if(symbol.getType().equals("int")){
+                functionHeader = functionHeader + "I";
+            }else if(symbol.getType().equals("array")){
+                functionHeader = functionHeader + "[I";
+            }
+        }
+
+
+        if(functionTable.getReturnSymbol() != null){
+            Symbol returnSymbol = functionTable.getReturnSymbol();
+
+            if (returnSymbol != null) {
+                if (returnSymbol.getType().equals("int"))
+                    functionHeader = functionHeader + ")I";
+                else if (returnSymbol.getType().equals("array"))
+                    functionHeader = functionHeader + ")[I";
+            } else
+                functionHeader = functionHeader + ")V";
+        }
+        else functionHeader = functionHeader + ")V";
+
+
+        return functionHeader;
+
+
+    }
+
+    public String functionHeaderInvoke(String functionName, ASTArgumentList arguments) {
 
         SymbolTable functionTable = this.symbolTables.get(functionName);
 
@@ -800,9 +835,9 @@ public class Proj {
                 }
 
                 if (call.module.equals("") && symbolTables.get(call.function)!=null) {
-                    file.println("  invokestatic " + this.moduleName + "/" + functionHeader(call.function, argumentList));
+                    file.println("  invokestatic " + this.moduleName + "/" + functionHeaderInvoke(call.function, argumentList));
                 } else {
-                    file.print("  invokestatic " + call.module +"/" + functionHeader(call.function, argumentList));
+                    file.print("  invokestatic " + call.module +"/" + functionHeaderInvoke(call.function, argumentList));
                 }     
 
         } else if (node instanceof ASTWhile) { // WHILE
