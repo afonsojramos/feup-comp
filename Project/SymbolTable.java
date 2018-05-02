@@ -5,7 +5,6 @@ public class SymbolTable {
     private LinkedHashMap<String, Symbol> parameters;
     private LinkedHashMap<String, Symbol> variables;
     private Symbol returnSymbol = null;
-    private int registerCounter;
     private boolean returned = false;
 
     public SymbolTable() {
@@ -58,6 +57,17 @@ public class SymbolTable {
             Symbol s = new Symbol(name, type);
             this.variables.put(name, s);
             return true;
+        }
+
+    }
+
+    public void removeVariable(String name) {
+
+        if (!this.variables.containsKey(name)) {
+            return;
+        } else {
+            System.out.println("REMOVED");
+            this.variables.remove(name);
         }
 
     }

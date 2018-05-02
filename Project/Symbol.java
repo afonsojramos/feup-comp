@@ -2,6 +2,7 @@ public class Symbol {
     private String name = null;
     private String type;
     private int register; //if it is -1, means it's a global variable
+    private boolean temporary = false;
 
     public Symbol(String name, String type) {
         this.name = name;
@@ -20,8 +21,20 @@ public class Symbol {
         return this.register;
     }
 
+    public boolean getTemporary() {
+        return this.temporary;
+    }
+
     public void setRegister(int register) {
         this.register = register;
+    }
+
+    public void setTemporary(){
+        this.temporary = true;
+    }
+
+    public void setPermanent(){
+        this.temporary = false;
     }
 
     public boolean equals(Object symbol) {

@@ -264,11 +264,22 @@ public class Proj {
 
                             type = "array";
 
-                            if (arraySize.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
+                            if (arraySize.value.isEmpty()) { //Case of VARIABLE has "name" but does not have "value"
                                 if (functionSymbolTable.getFromAll(arraySize.name) == null && symbolTables.get(moduleName).getFromAll(arraySize.name) == null)
                                     printSemanticError(arraySize.name, arraySize.line, "Undefined variable.");
-                                else if (functionSymbolTable.getAcessType(arraySize.name) != "int") //Variable must represent an int
-                                    printSemanticError(arraySize.name, arraySize.line, "Type mismatch..");
+                                else {
+                                    for (int k = 0; k < arraySize.jjtGetNumChildren(); k++) {
+                                        if (arraySize.jjtGetChild(k) instanceof ASTSizeAccess) {
+                                            arrayIndex = true;
+                                        }
+                                    }
+                                    if (functionSymbolTable.getAcessType(arraySize.name) != "int" && arrayIndex == false) //Variable must represent an int
+                                        printSemanticError(arraySize.name, arraySize.line, "Type mismatch..");
+                                }
+                                
+                                
+                                
+                                
                             }
                         }
 
@@ -350,11 +361,11 @@ public class Proj {
             
             if(functionSymbolTable.getReturnSymbol()!=null && name.equals(functionSymbolTable.getReturnSymbol().getName())){
                 functionSymbolTable.setReturned(true);
-                if(!type.equals(functionSymbolTable.getReturnSymbol().getType()))
+                if(!type.equals(functionSymbolTable.getReturnSymbol().getType()) && functionSymbolTable.getReturnSymbol().getType() == "int")
                     printSemanticError(name, assign.line,"Return type mismatch.");                    
             } 
 
-            if (canAddVariable(functionSymbolTable, name, type)) {
+            /* if (canAddVariable(functionSymbolTable, name, type)) {
                 if (assign.parent instanceof ASTWhile || assign.parent instanceof ASTIf){
                     System.out.println("SOU FILHO DO IF");
                     ifVarlist.put(name, new Symbol(name, type));
@@ -377,6 +388,31 @@ public class Proj {
                         it.next();
                         it.remove(); // avoids a ConcurrentModificationException
                     }
+                    functionSymbolTable.addVariable(name, type);
+                }
+
+            } */
+
+            if (canAddVariable(functionSymbolTable, name, type)) {
+                if (assign.parent instanceof ASTIf){
+                    System.out.println("SOU FILHO DO IF");
+                    functionSymbolTable.addVariable(name, type);
+                }
+                else if (assign.parent instanceof ASTElse){
+                    System.out.println("SOU FILHO DO ELSE");
+                    if (functionSymbolTable.getFromAll(name) != null && functionSymbolTable.getFromAll(name).getType() != type){
+                        printSemanticError(name, assign.line, "Type of Variable different from IF container.");
+                        functionSymbolTable.removeVariable(name);
+                    }
+                    else if (functionSymbolTable.getFromAll(name) == null){
+                        printSemanticError(name, assign.line, "Variable has to be in if and else");
+                    }
+                }  
+                else if (assign.parent instanceof ASTWhile) {
+                    System.out.println("SOU FILHO DO WHILE");
+                    functionSymbolTable.addVariable(name, type);
+                }             
+                else {
                     functionSymbolTable.addVariable(name, type);
                 }
 
@@ -432,7 +468,7 @@ public class Proj {
         if (node instanceof ASTCall) {
 			ASTCall call = (ASTCall) node;
 
-            if (this.symbolTables.get(call.function) == null && call.module.compareTo("io") != 0)//Excludes io module
+            if (this.symbolTables.get(call.function) == null && call.module == "")//Excludes io module
                 printSemanticError(call.function, call.line, "Function not declared."); 
 
             for (int i = 0; i < call.jjtGetNumChildren(); i++) {
