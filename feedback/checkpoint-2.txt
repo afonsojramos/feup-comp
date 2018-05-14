@@ -1,0 +1,22 @@
+CHECKPOINT 2 FEEDBACK
+=====================
+Class 5 - Group 54
+
+These notes are based on an analysis of commit 8b8195da15a677c36626648119a8f4a655ae8304.
+If you believe this is an error, contact your class teacher.
+=====================
+
+High-priority:
+	- Missing initialization verification (e.g., "if (a > b) { y = 1; } c = y;" should
+be an error, as "y" may be undefined).
+	- Missing code generation for "y = a;"
+	- When calling a function with a return value (e.g., "y = ext.f()"), the signature
+should end in the return type (e.g., "invokestatic ext/f()I"). "V" should only be used
+for void functions.
+	- Missing line break after "invokestatic" calls.
+	- In "getstatic module - test/w I", why include the "module - "?
+	- In "invokestatic ext/foo(java/lang/String;)V", the string argument should start
+with an "L" ("Ljava/lang/String;").
+
+Low-priority:
+	- Use packages, instead of Java's default package
