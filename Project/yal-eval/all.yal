@@ -8,6 +8,14 @@ module all {
 		io.println("arg2 = ", arg2);
 		ret = arg1 + arg2;
 		io.println("ret in funcAbove = ", ret);
+		
+		c=1;
+		d=c;
+
+		k=[10]; //TODO
+		k[2]=3; //TODO
+		e=k[2]; //TODO
+		f=k.size; //TODO
 	}
 	
 	function main() {

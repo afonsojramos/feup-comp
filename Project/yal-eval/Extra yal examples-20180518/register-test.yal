@@ -1,0 +1,10 @@
+// Should work with -r=1, use a single local
+
+module registerTest {
+	function y = f(a) {
+		b = a + 1;
+		c = b + 1;
+		d = c + 1;
+		y = d + 1;
+	}
+}

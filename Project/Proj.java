@@ -586,7 +586,7 @@ public class Proj {
         if (root != null && root instanceof ASTModule) {
             ASTModule module = (ASTModule) root;
 
-            file.println(".class public " + this.moduleName);
+            file.println(".class public " +  this.moduleName.substring(9));
             file.println(".super java/lang/Object\n");
 
             for (int i = 0; i < module.jjtGetNumChildren(); i++) {
@@ -762,7 +762,7 @@ public class Proj {
                     else  functionHeader = functionHeader + "I";
                 }  
                 else if (argument.type.equals("String"))
-                    functionHeader = functionHeader + "java/lang/String;";
+                    functionHeader = functionHeader + "Ljava/lang/String;";
     
             }
         }
@@ -835,7 +835,7 @@ public class Proj {
                 }
 
                 if (call.module.equals("") && symbolTables.get(call.function)!=null) {
-                    file.println("  invokestatic " + this.moduleName + "/" + functionHeaderInvoke(call.function, argumentList));
+                    file.println("  invokestatic " + this.moduleName.substring(9) + "/" + functionHeaderInvoke(call.function, argumentList));
                 } else {
                     file.print("  invokestatic " + call.module +"/" + functionHeaderInvoke(call.function, argumentList));
                 }     
@@ -846,7 +846,7 @@ public class Proj {
             }
 
         } else if (node instanceof ASTExprtest) {
-            statementToJvm(file, functionTable, node.jjtGetChild(0));
+            statementToJvm(file, functionTable, node.jjtGetChild(0));   
         }
     }
 
@@ -947,9 +947,19 @@ public class Proj {
 
                     ASTAccess termAccess = (ASTAccess) term.jjtGetChild(0);
 
-                    //TODO: array
+                    if(termAccess.jjtGetNumChildren()==0){ //a=b
+                        printVariableLoad(file, functionTable, termAccess.name, "ID");                
+                        printVariableStore(file, functionTable, accessName);
+                    }
+                    if(termAccess.jjtGetNumChildren()==1){ 
+
+                        //TODO: a=b[1]
+                        //TODO: a=b.size
+
+                    }
 
                 } else if (term.jjtGetChild(0) instanceof ASTCall) { //eg.: a=f1(b)
+                    
                     statementToJvm(file, functionTable, term.jjtGetChild(0));
                     printVariableStore(file, functionTable, accessName);
 
@@ -995,7 +1005,7 @@ public class Proj {
             if (globalVariable != null) {
                 String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
 
-                file.println("  putstatic " + this.moduleName + "/" + globalVariable.getName() + globalVariableType);
+                file.println("  putstatic " + this.moduleName.substring(9) + "/" + globalVariable.getName() + globalVariableType);
             }
 
         }
@@ -1018,7 +1028,7 @@ public class Proj {
                 if (globalVariable != null) {
                     String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
 
-                    file.println("  getstatic " + this.moduleName + "/" + globalVariable.getName() + globalVariableType);
+                    file.println("  getstatic " + this.moduleName.substring(9) + "/" + globalVariable.getName() + globalVariableType);
                 }
 
             }

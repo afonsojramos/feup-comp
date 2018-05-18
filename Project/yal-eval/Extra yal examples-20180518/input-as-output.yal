@@ -1,0 +1,5 @@
+module inputAsOutput {
+	function y = f(y) {
+		// Ok
+	}
+}

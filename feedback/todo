@@ -1,0 +1,15 @@
+	
+	TODO:
+    - When calling a function with a return value (e.g., "y = ext.f()"), the signature
+should end in the return type (e.g., "invokestatic ext/f()I"). "V" should only be used
+for void functions.
+
+	- Missing line break after "invokestatic" calls.
+	
+	
+    
+    DONE:
+    - In "getstatic module - test/w I", why include the "module - "?
+    - In "invokestatic ext/foo(java/lang/String;)V", the string argument should start
+with an "L" ("Ljava/lang/String;").
+    - Missing code generation for "y = a;"
