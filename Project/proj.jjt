@@ -224,10 +224,10 @@ void Exprtest() : {Token s;}
 }
 
 //While ::= <WHILE> Exprtest <LCHAVETA> Stmtlst <RCHAVETA>
-void While() : {errorIn = "WHILE()";} 
+void While() : {Token s1; errorIn = "WHILE()";} 
 {
     try {
-        <WHILE> Exprtest() <LCHAVETA> 
+        s1=<WHILE>{jjtThis.line = s1.beginLine;} Exprtest() <LCHAVETA> 
     } catch (ParseException e) {
         System.out.print(e.toString());
         skip_to(LCHAVETA);

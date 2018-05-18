@@ -7,4 +7,5 @@ javacc proj.jj
 javac *.java
 
 #java Proj yal-eval/SemanticTests/ftl.yal color
-java Proj yal-eval/all.yal color
+#java Proj yal-eval/all.yal color
+java Proj yal-eval/MyFirstYalExamples/array1.yal color

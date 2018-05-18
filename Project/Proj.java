@@ -22,6 +22,7 @@ public class Proj {
     private HashMap<String, Symbol> ifVarlist = new HashMap<String, Symbol>();
     private String moduleName;
     private int errorCount = 0;
+    private int loopId = 1;
 
     public static void main(String args[]) throws ParseException {
         yal2jvm parser;
@@ -677,7 +678,7 @@ public class Proj {
             if(!(function.jjtGetChild(i) instanceof ASTElement || function.jjtGetChild(i) instanceof ASTVarlist)){
                 file.print("\n");
                 statementToJvm(file, functionTable, function.jjtGetChild(i));
-                file.print("\n");
+                //file.print("\n");
             }
         }
 
@@ -798,7 +799,7 @@ public class Proj {
 
                     if (access.jjtGetNumChildren() == 0) { //just ints and entire arrays, no array accesses
                         if (rhs.jjtGetNumChildren() == 1) { //just simple assigns, no operations
-                            simpleAssign(file, functionTable, access.name, rhs);
+                            simpleAccessRhs(file, functionTable, access.name, rhs,"assign");
                         } else if (rhs.jjtGetNumChildren() == 2) { //operations
                             String term1 = getTerm((ASTTerm) rhs.jjtGetChild(0));
                             String term2 = getTerm((ASTTerm) rhs.jjtGetChild(1));
@@ -837,17 +838,99 @@ public class Proj {
                 if (call.module.equals("") && symbolTables.get(call.function)!=null) {
                     file.println("  invokestatic " + this.moduleName.substring(9) + "/" + functionHeaderInvoke(call.function, argumentList));
                 } else {
-                    file.print("  invokestatic " + call.module +"/" + functionHeaderInvoke(call.function, argumentList));
+                    file.println("  invokestatic " + call.module +"/" + functionHeaderInvoke(call.function, argumentList));
                 }     
 
         } else if (node instanceof ASTWhile) { // WHILE
-            for (int i = 1; i < node.jjtGetNumChildren(); i++) { //TODO: comecar em 0 e analidar o expression
-                statementToJvm(file, functionTable, node.jjtGetChild(i));
+            ASTWhile whileNode = (ASTWhile) node;
+            
+            file.println("loop"+whileNode.line+":");
+            
+            for (int i = 0; i < whileNode.jjtGetNumChildren(); i++) { //TODO: comecar em 0 e analidar o expression
+                if(whileNode.jjtGetChild(i) instanceof ASTExprtest){
+                    exprtestToJvm(file, functionTable, whileNode.jjtGetChild(i));    
+                }
+                else{
+                    file.print("\n");                    
+                    statementToJvm(file, functionTable, whileNode.jjtGetChild(i));
+                } 
             }
 
-        } else if (node instanceof ASTExprtest) {
-            statementToJvm(file, functionTable, node.jjtGetChild(0));   
+            file.println("  goto loop"+whileNode.line);
+            file.println("loop"+whileNode.line+"_end:");
+
         }
+    }
+
+    public void exprtestToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+
+        ASTExprtest exprtest = (ASTExprtest) node;
+
+        if (exprtest.jjtGetNumChildren() == 2) {
+            if(exprtest.jjtGetChild(0) instanceof ASTAccess && exprtest.jjtGetChild(1) instanceof ASTRhs){
+                
+                ASTAccess access = (ASTAccess) exprtest.jjtGetChild(0);
+                ASTRhs rhs = (ASTRhs) exprtest.jjtGetChild(1);
+
+                if (access.jjtGetNumChildren() == 0) { //just ints and entire arrays, no array accesses
+                    if (rhs.jjtGetNumChildren() == 1) { //just simple assigns, no operations
+                       
+                        simpleAccessRhs(file, functionTable, access.name, rhs,"exprtest");
+            
+
+                    } else if (rhs.jjtGetNumChildren() == 2) { //operations
+                       
+                               
+
+
+
+
+
+
+
+
+
+
+                    
+                    }
+
+                    //assign of array accesses
+                } else if (access.jjtGetNumChildren() == 1 && access.jjtGetChild(0) instanceof ASTArrayAccess) { //eg.:a[i]=10 / a[4]=10
+
+                    ASTArrayAccess arrayAccess = (ASTArrayAccess) access.jjtGetChild(0);
+
+                    //TODO:array       
+                }
+
+            }
+        }
+
+        //">" | "<" | "<=" | ">=" | "==" | "!=">
+        switch(exprtest.operator){
+            case ">":
+                file.println("  ifcmple loop" + loopId + "_end" );
+                break;
+            case "<":
+                file.println("  ifcmpge loop" + loopId + "_end" );
+                break;
+            case "<=":
+                file.println("  ifcmpgt loop" + loopId + "_end" );
+                break;
+            case ">=":
+                file.println("  ifcmplit loop" + loopId + "_end" );
+                break;
+            case "==":
+                file.println("  ifcmpne loop" + loopId + "_end" );
+                break;
+            case "!=":
+                file.println("  ifcmpeq loop" + loopId + "_end" );
+                break;
+            default:
+                break;   
+        }
+
+
+
     }
 
     public void manageOperation(PrintWriter file, SymbolTable functionTable, String accessName, String operator, String term1, String term2) {
@@ -924,7 +1007,7 @@ public class Proj {
         return "";
     }
 
-    public void simpleAssign(PrintWriter file, SymbolTable functionTable, String accessName, ASTRhs rhs) {
+    public void simpleAccessRhs(PrintWriter file, SymbolTable functionTable, String accessName, ASTRhs rhs, String mode) {
         if (rhs.jjtGetChild(0) instanceof ASTTerm) {
 
             ASTTerm term = (ASTTerm) rhs.jjtGetChild(0);
@@ -936,20 +1019,30 @@ public class Proj {
                     name = '-' + name; //Negative number
 
                 printVariableLoad(file, functionTable, name, "Integer");                
-                printVariableStore(file, functionTable, accessName);
+                if(mode.equals("assign")){
+                    printVariableStore(file, functionTable, accessName);                    
+                }
+                else if(mode.equals("exprtest")){
+                    printVariableLoad(file, functionTable, accessName, "ID");                    
+                }
 
                 //TODO: array (se a for array)
 
             }
 
             if (term.jjtGetNumChildren() == 1) {
-                if (term.jjtGetChild(0) instanceof ASTAccess) { //eg.: i=b.size
+                if (term.jjtGetChild(0) instanceof ASTAccess) {
 
                     ASTAccess termAccess = (ASTAccess) term.jjtGetChild(0);
 
                     if(termAccess.jjtGetNumChildren()==0){ //a=b
                         printVariableLoad(file, functionTable, termAccess.name, "ID");                
-                        printVariableStore(file, functionTable, accessName);
+                        if(mode.equals("assign")){
+                            printVariableStore(file, functionTable, accessName);                            
+                        }
+                        else if(mode.equals("exprtest")){
+                            printVariableLoad(file, functionTable, accessName, "ID");                    
+                        }
                     }
                     if(termAccess.jjtGetNumChildren()==1){ 
 
@@ -961,7 +1054,12 @@ public class Proj {
                 } else if (term.jjtGetChild(0) instanceof ASTCall) { //eg.: a=f1(b)
                     
                     statementToJvm(file, functionTable, term.jjtGetChild(0));
-                    printVariableStore(file, functionTable, accessName);
+                    if(mode.equals("assign")){
+                        printVariableStore(file, functionTable, accessName);                        
+                    }
+                    else if(mode.equals("exprtest")){
+                        printVariableLoad(file, functionTable, accessName, "ID");                    
+                    }
 
                     //TODO: array (se a for array)
                 }
