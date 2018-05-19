@@ -1313,8 +1313,19 @@ public class Proj {
         ASTAssign assign = (ASTAssign) node;
 
         if (assign.jjtGetChild(0) instanceof ASTAccess && assign.jjtGetChild(1) instanceof ASTRhs){
-            rhsToJvm(file, functionTable, assign.jjtGetChild(1));
-            accessToJvm(file, functionTable, assign.jjtGetChild(0), "Left");
+            
+            if(assign.jjtGetChild(0).jjtGetNumChildren() == 1 && assign.jjtGetChild(0).jjtGetChild(0) instanceof ASTArrayAccess){
+                ASTAccess access = (ASTAccess) assign.jjtGetChild(0);
+                printVariableLoad(file, functionTable, access.name, "ID"); //reference
+                arrayaccessToJvm(file,functionTable, access.jjtGetChild(0));
+                rhsToJvm(file, functionTable, assign.jjtGetChild(1));
+                file.println("  iastore");
+            }else{
+                rhsToJvm(file, functionTable, assign.jjtGetChild(1));
+                accessToJvm(file, functionTable, assign.jjtGetChild(0), "Left");
+            }
+            
+           
         }
         
     }
@@ -1389,10 +1400,32 @@ public class Proj {
         }
         else if(access.jjtGetNumChildren() == 1){
             if(access.jjtGetChild(0) instanceof ASTArrayAccess){
-                //TODO: index
+                if(mode.equals("Right")){ //Load
+                    printVariableLoad(file, functionTable, access.name, "ID"); //reference
+                    arrayaccessToJvm(file,functionTable, access.jjtGetChild(0));
+                }
+            } 
+        }
+    }
+    
+
+    public void arrayaccessToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+        ASTArrayAccess arrayAccess = (ASTArrayAccess) node;
+
+        if(arrayAccess.jjtGetNumChildren() == 1){
+
+            if(arrayAccess.jjtGetChild(0) instanceof ASTIndex){
+
+                ASTIndex index = (ASTIndex) arrayAccess.jjtGetChild(0);
+
+                if(!index.value.equals("")){ //Size is an integer
+                    printVariableLoad(file, functionTable, index.value, "Integer");
+
+                } else if(!index.name.equals("")){ //Size is a variable
+                    printVariableLoad(file, functionTable, index.name, "ID");
+                }
             }
         }
-
     }
 
     public void callToJvm(PrintWriter file, SymbolTable functionTable, Node node){
