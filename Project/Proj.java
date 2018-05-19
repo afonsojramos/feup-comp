@@ -590,16 +590,29 @@ public class Proj {
             file.println(".class public " +  this.moduleName.substring(9));
             file.println(".super java/lang/Object\n");
 
+            HashMap<String, String> staticArrays = new HashMap<>();
+
+            //declarations
+
+            for (int i = 0; i < module.jjtGetNumChildren(); i++) {   
+              
+                if (module.jjtGetChild(i) instanceof ASTDeclaration) {
+                    ASTDeclaration declaration = (ASTDeclaration) module.jjtGetChild(i);
+                    declarationsToJvm(file, declaration, staticArrays);
+
+                } else if (module.jjtGetChild(i) instanceof ASTFunction) {
+                    break;
+                }
+            }
+
+            if(!staticArrays.isEmpty()){
+                initDeclarationsArrays(file, staticArrays);
+            }
+
+            //functions
             for (int i = 0; i < module.jjtGetNumChildren(); i++) {
 
-                //declarations
-                if (module.jjtGetChild(i) instanceof ASTDeclaration) {
-
-                    ASTDeclaration declaration = (ASTDeclaration) module.jjtGetChild(i);
-                    declarationsToJvm(file, declaration);
-
-                    //functions
-                } else if (module.jjtGetChild(i) instanceof ASTFunction) {
+                if (module.jjtGetChild(i) instanceof ASTFunction) {
                     ASTFunction function = (ASTFunction) module.jjtGetChild(i);
                     functionToJvm(file, function);
                 }
@@ -610,7 +623,7 @@ public class Proj {
         file.close();
     }
 
-    public void declarationsToJvm(PrintWriter file, ASTDeclaration declaration) {
+    public void declarationsToJvm(PrintWriter file, ASTDeclaration declaration, HashMap<String, String> staticArrays) {
 
         ASTElement element = (ASTElement) declaration.jjtGetChild(0);
 
@@ -632,9 +645,65 @@ public class Proj {
 
         else if (type.equals("array")) {
             file.println(".field static " + element.name + " [I");
+
+            if(declaration.jjtGetChild(1) instanceof ASTArraySize){
+
+                ASTArraySize arraysize = (ASTArraySize) declaration.jjtGetChild(1);
+
+                if(!arraysize.value.equals("")){ //Size is an integer
+                    staticArrays.put(element.name, arraysize.value);
+
+                } else if(!arraysize.name.equals("")){ //Size is a variable
+                    staticArrays.put(element.name, arraysize.name);
+                }
+                
+            }
         }
 
     }
+
+    public void initDeclarationsArrays(PrintWriter file, HashMap<String,String> staticArrays){
+
+        file.println("\n.method static public <clinit>()V");
+        file.println("  .limit stack " + staticArrays.size());
+        file.println("  .limit locals " + staticArrays.size() + "\n");
+
+        for (Map.Entry<String, String> entry : staticArrays.entrySet()) {
+
+            if(entry.getValue().matches("-?\\d+(\\.\\d+)?")){ //it's a int
+                printVariableLoad(file, null, entry.getValue(), "Integer");
+            }
+            else{//it's a variable
+                printVariableLoad(file, null, entry.getValue(), "ID");
+            }
+
+            file.println("  newarray int");
+            printVariableStore(file, null, entry.getKey());
+
+            file.print("\n");
+
+        }
+
+        file.println("  return");            
+        file.println(".end method\n");
+
+    }
+
+    /*public void initArray(PrintWriter file, SymbolTable functionTable, String array, String size){
+
+        if(size.matches("-?\\d+(\\.\\d+)?")){ //it's a int
+            printVariableLoad(file, functionTable, size, "Integer");
+        }
+        else{//it's a variable
+            printVariableLoad(file, functionTable, size, "ID");
+        }
+
+        file.println("  newarray int");
+        printVariableStore(file, functionTable, array);
+
+        file.print("\n");
+
+    }*/
 
     public void functionToJvm(PrintWriter file, ASTFunction function) {
 
@@ -668,7 +737,7 @@ public class Proj {
         if(function.name.equals("main")) nrLocals++;
         int nrStack = nrLocals; //TODO: alterar para nÃºmero correto
 
-        file.println("  .limit stack " + "10");
+        file.println("  .limit stack " + nrStack);
         file.println("  .limit locals " + nrLocals);
 
 
@@ -683,15 +752,14 @@ public class Proj {
         }
 
         //function return
-
+        
         if (functionTable.getReturnSymbol() != null) {
+            file.print("\n");
+            printVariableLoad(file, functionTable,functionTable.getReturnSymbol().getName(), "ID");
             if (functionTable.getReturnSymbol().getType() == "int") {
-                file.println("\n  iload_" + functionTable.getReturnSymbol().getRegister());
                 file.println("  ireturn");
 
             } else { //array
-
-                file.println("\n  aload " + functionTable.getReturnSymbol().getRegister());
                 file.println("  areturn");
 
             }
@@ -786,7 +854,7 @@ public class Proj {
         return functionHeader;
     }
 
-    public void statementToJvm(PrintWriter file, SymbolTable functionTable, Node node) {
+    /*public void statementToJvm(PrintWriter file, SymbolTable functionTable, Node node) {
 
         if (node instanceof ASTAssign) { //ASSIGNS
             ASTAssign assign = (ASTAssign) node;
@@ -811,7 +879,28 @@ public class Proj {
 
                         ASTArrayAccess arrayAccess = (ASTArrayAccess) access.jjtGetChild(0);
 
-                        //TODO:array       
+                        if(arrayAccess.jjtGetNumChildren() == 1 && arrayAccess.jjtGetChild(0) instanceof ASTIndex){
+
+                            ASTIndex index = (ASTIndex) arrayAccess.jjtGetChild(0);
+                            
+                            printVariableLoad(file, functionTable, access.name, "ID"); //reference
+
+                            //index
+                            if(!index.value.equals("")){ //Size is an integer
+                                printVariableLoad(file, functionTable, index.value, "Integer");
+            
+                            } else if(!index.name.equals("")){ //Size is a variable
+                                printVariableLoad(file, functionTable, index.name, "ID");
+                            }
+
+                            //TODO: value
+                            file.println("  VALUE");
+                            
+                            //store
+                            file.println("  iastore");
+                            
+                        }
+
                     }
 
                 }
@@ -848,7 +937,7 @@ public class Proj {
             
             for (int i = 0; i < whileNode.jjtGetNumChildren(); i++) { //TODO: comecar em 0 e analidar o expression
                 if(whileNode.jjtGetChild(i) instanceof ASTExprtest){
-                    exprtestToJvm(file, functionTable, whileNode.jjtGetChild(i));    
+                    exprtestToJvm(file, functionTable, whileNode.jjtGetChild(i), whileNode.line);    
                 }
                 else{
                     file.print("\n");                    
@@ -860,9 +949,9 @@ public class Proj {
             file.println("loop"+whileNode.line+"_end:");
 
         }
-    }
+    }*/
 
-    public void exprtestToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+    /*public void exprtestToJvm(PrintWriter file, SymbolTable functionTable, Node node, int loop){
 
         ASTExprtest exprtest = (ASTExprtest) node;
 
@@ -908,22 +997,22 @@ public class Proj {
         //">" | "<" | "<=" | ">=" | "==" | "!=">
         switch(exprtest.operator){
             case ">":
-                file.println("  ifcmple loop" + loopId + "_end" );
+                file.println("  ifcmple loop" + loop + "_end" );
                 break;
             case "<":
-                file.println("  ifcmpge loop" + loopId + "_end" );
+                file.println("  ifcmpge loop" + loop + "_end" );
                 break;
             case "<=":
-                file.println("  ifcmpgt loop" + loopId + "_end" );
+                file.println("  ifcmpgt loop" + loop + "_end" );
                 break;
             case ">=":
-                file.println("  ifcmplit loop" + loopId + "_end" );
+                file.println("  ifcmplit loop" + loop + "_end" );
                 break;
             case "==":
-                file.println("  ifcmpne loop" + loopId + "_end" );
+                file.println("  ifcmpne loop" + loop + "_end" );
                 break;
             case "!=":
-                file.println("  ifcmpeq loop" + loopId + "_end" );
+                file.println("  ifcmpeq loop" + loop + "_end" );
                 break;
             default:
                 break;   
@@ -931,7 +1020,7 @@ public class Proj {
 
 
 
-    }
+    }*/
 
     public void manageOperation(PrintWriter file, SymbolTable functionTable, String accessName, String operator, String term1, String term2) {
         String regex = "\\d+";
@@ -986,6 +1075,39 @@ public class Proj {
 
     }
 
+    public void printOperation(PrintWriter file, SymbolTable functionTable, String operator,
+            String term1, String term2) {
+        String regex = "\\d+";
+
+        if (term2.matches(regex)) {
+            printVariableLoad(file, functionTable, term1, "ID");
+            printVariableLoad(file, functionTable, term2, "Integer");
+        } else if (term1.matches(regex)) {
+            printVariableLoad(file, functionTable, term1, "Integer");
+            printVariableLoad(file, functionTable, term2, "ID");
+        } else {
+            printVariableLoad(file, functionTable, term1, "ID");
+            printVariableLoad(file, functionTable, term2, "ID");
+        }
+
+        switch (operator) {
+        case "+":
+            file.println("  iadd");
+            break;
+        case "-":
+            file.println("  isub");
+            break;
+        case "*":
+            file.println("  imul");
+            break;
+        case "/":
+            file.println("  idiv");
+            break;
+        default:
+            break;
+        }
+    }
+
     public String getTerm(ASTTerm term) {
         if (term.jjtGetNumChildren() == 0 && term.integer != "") { // term is a number
             return term.integer;
@@ -1007,7 +1129,7 @@ public class Proj {
         return "";
     }
 
-    public void simpleAccessRhs(PrintWriter file, SymbolTable functionTable, String accessName, ASTRhs rhs, String mode) {
+    /*public void simpleAccessRhs(PrintWriter file, SymbolTable functionTable, String accessName, ASTRhs rhs, String mode) {
         if (rhs.jjtGetChild(0) instanceof ASTTerm) {
 
             ASTTerm term = (ASTTerm) rhs.jjtGetChild(0);
@@ -1068,11 +1190,21 @@ public class Proj {
 
         } else if (rhs.jjtGetChild(0) instanceof ASTArraySize) { //eg.: a=[N]
 
-            ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(0);
+            ASTArraySize arraysize = (ASTArraySize) rhs.jjtGetChild(0);
 
-            //TODO:array
+            String size;
+
+            if(!arraysize.value.equals("")){ //Size is an integer
+                size = arraysize.value;
+
+            } else { //Size is a variable
+                size = arraysize.name;
+            }
+
+            initArray(file, functionTable, accessName, size);
+
         }
-    }
+    }*/
 
     public boolean printVariableInc(PrintWriter file, SymbolTable functionTable, String termVariable, String operator, String termNumber) {
 
@@ -1092,11 +1224,18 @@ public class Proj {
 
     public void printVariableStore(PrintWriter file, SymbolTable functionTable, String name) {
 
-        Symbol variable = functionTable.getFromAll(name);
-        if (variable != null) { //Local Variables
-            if(variable.getRegister() >= 0 && variable.getRegister()<=3)
-                file.println("  istore_" + variable.getRegister());
-            else file.println("  istore " + variable.getRegister());
+        
+        if (functionTable != null && functionTable.getFromAll(name) != null) { //Local Variables
+            Symbol variable = functionTable.getFromAll(name);
+            if(variable.getType().equals("int")){ //ints
+                if(variable.getRegister() >= 0 && variable.getRegister()<=3)
+                    file.println("  istore_" + variable.getRegister());
+                else file.println("  istore " + variable.getRegister());
+            }else{ //arrays
+                if(variable.getRegister() >= 0 && variable.getRegister()<=3)
+                    file.println("  astore_" + variable.getRegister());
+                else file.println("  astore " + variable.getRegister());
+            }
 
         } else { //Global variable             
             Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
@@ -1112,13 +1251,20 @@ public class Proj {
     public void printVariableLoad(PrintWriter file, SymbolTable functionTable, String name, String type) {
 
         if (type.equals("ID")) {
-            Symbol variable = functionTable.getFromAll(name);
-            if (variable != null) { //Local Variables
-                if(variable.getRegister() >= 0 && variable.getRegister()<=3)
-                    file.println("  iload_" + variable.getRegister());
-                else file.println("  iload " + variable.getRegister());
+            if (functionTable != null && functionTable.getFromAll(name) != null) { //Local Variables
+                Symbol variable = functionTable.getFromAll(name);
 
-                //TODO: array
+                if(variable.getType().equals("int")){ //ints
+                    if(variable.getRegister() >= 0 && variable.getRegister()<=3)
+                        file.println("  iload_" + variable.getRegister());
+                    else file.println("  iload " + variable.getRegister());
+                }
+                else{//arrays
+                    if(variable.getRegister() >= 0 && variable.getRegister()<=3)
+                        file.println("  aload_" + variable.getRegister());
+                    else file.println("  aload " + variable.getRegister());
+                }
+                
 
             } else { //Global variable             
                 Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
@@ -1148,5 +1294,183 @@ public class Proj {
 
     public void printSemanticError(String var, int line, String error) {
         System.out.println( ANSI_RED + "Semantic Error nº" + ++errorCount + "!\n" + ANSI_YELLOW + "Line " + ANSI_CYAN + line + ANSI_RESET + " : " + var + " -> " + error);
+    }
+
+    ////////////////// NEW CODE //////////////////
+
+    public void statementToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+
+        if (node instanceof ASTAssign) { 
+            assignToJvm(file, functionTable, node);
+        }else if (node instanceof ASTCall){
+            callToJvm(file, functionTable, node);
+        }else if (node instanceof ASTWhile){
+            whileToJvm(file, functionTable, node);
+        }
+    }
+
+    public void assignToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+        ASTAssign assign = (ASTAssign) node;
+
+        if (assign.jjtGetChild(0) instanceof ASTAccess && assign.jjtGetChild(1) instanceof ASTRhs){
+            rhsToJvm(file, functionTable, assign.jjtGetChild(1));
+            accessToJvm(file, functionTable, assign.jjtGetChild(0), "Left");
+        }
+        
+    }
+
+    public void rhsToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+        ASTRhs rhs = (ASTRhs) node;
+
+        if(rhs.jjtGetNumChildren() == 1){
+            if (rhs.jjtGetChild(0) instanceof ASTTerm) {
+                termToJvm(file, functionTable, rhs.jjtGetChild(0));
+            }
+            else if(rhs.jjtGetChild(0) instanceof ASTArraySize){
+                arraySizeToJvm(file, functionTable, rhs.jjtGetChild(0));
+            }
+
+        }else if(rhs.jjtGetNumChildren() == 2){
+            ASTTerm term1 = (ASTTerm) rhs.jjtGetChild(0);
+            ASTTerm term2 = (ASTTerm) rhs.jjtGetChild(1);
+            //TODO: INCs 
+            printOperation(file, functionTable, rhs.operator, getTerm(term1), getTerm(term2));
+        }
+    }
+
+    public void arraySizeToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+        ASTArraySize arraysize = (ASTArraySize) node;
+
+        if(!arraysize.value.equals("")){ //Size is an integer
+            printVariableLoad(file, functionTable, arraysize.value, "Integer");
+        } else { //Size is a variable
+            printVariableLoad(file, functionTable, arraysize.name, "ID");
+        }
+
+        file.println("  newarray int");
+    }
+
+    
+
+    public void termToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+
+        ASTTerm term = (ASTTerm) node;
+
+        if (term.jjtGetNumChildren() == 0){
+            if(term.integer != "") { //simple integer
+                
+                String name = term.integer;
+                if (term.operator.equals("-"))
+                    name = '-' + name; //Negative number
+
+                printVariableLoad(file, functionTable, name, "Integer");                
+
+            }
+
+        } else if(term.jjtGetNumChildren() == 1){
+            if (term.jjtGetChild(0) instanceof ASTAccess) {
+                accessToJvm(file, functionTable, term.jjtGetChild(0), "Right");
+            } else if(term.jjtGetChild(0) instanceof ASTCall){
+                callToJvm(file, functionTable, term.jjtGetChild(0));
+            }
+        }
+
+
+    }
+
+    public void accessToJvm(PrintWriter file, SymbolTable functionTable, Node node, String mode){
+        ASTAccess access = (ASTAccess) node;
+
+        if(access.jjtGetNumChildren() == 0){
+            if(mode.equals("Left")) //store
+                printVariableStore(file, functionTable, access.name); 
+            else //load
+                printVariableLoad(file, functionTable, access.name, "ID");
+        }
+        else if(access.jjtGetNumChildren() == 1){
+            if(access.jjtGetChild(0) instanceof ASTArrayAccess){
+                //TODO: index
+            }
+        }
+
+    }
+
+    public void callToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+
+        ASTCall call = (ASTCall) node;
+        ASTArgumentList argumentList = null;
+
+        if(call.jjtGetNumChildren() > 0 && call.jjtGetChild(0) instanceof ASTArgumentList){
+
+            argumentList = (ASTArgumentList) call.jjtGetChild(0);
+            for(int i = 0; i < argumentList.jjtGetNumChildren(); i++){
+                ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
+                printVariableLoad(file,functionTable,argument.name, argument.type);
+            }
+        }
+
+        if (call.module.equals("") && symbolTables.get(call.function)!=null) {
+            file.println("  invokestatic " + this.moduleName.substring(9) + "/" + functionHeaderInvoke(call.function, argumentList));
+        } else {
+            file.println("  invokestatic " + call.module +"/" + functionHeaderInvoke(call.function, argumentList));
+        }
+
+    }
+
+
+    public void whileToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+
+        ASTWhile whileNode = (ASTWhile) node;
+         
+        file.println("loop"+whileNode.line+":");
+        
+        for (int i = 0; i < whileNode.jjtGetNumChildren(); i++) {
+            if(whileNode.jjtGetChild(i) instanceof ASTExprtest){
+                exprtestToJvm(file, functionTable,  whileNode.jjtGetChild(i), whileNode.line);    
+            }
+            else{
+                file.print("\n");                    
+                statementToJvm(file, functionTable, whileNode.jjtGetChild(i));
+            } 
+        }
+
+        file.println("  goto loop"+whileNode.line);
+        file.println("loop"+whileNode.line+"_end:");
+    }
+
+    public void exprtestToJvm(PrintWriter file, SymbolTable functionTable, Node node, int loop){
+
+        ASTExprtest exprtest = (ASTExprtest) node;
+
+        if (exprtest.jjtGetChild(0) instanceof ASTAccess && exprtest.jjtGetChild(1) instanceof ASTRhs){
+            rhsToJvm(file, functionTable, exprtest.jjtGetChild(1));
+            accessToJvm(file, functionTable, exprtest.jjtGetChild(0), "Left");
+        }
+
+
+         //">" | "<" | "<=" | ">=" | "==" | "!=">
+         switch(exprtest.operator){
+            case ">":
+                file.println("  ifcmple loop" + loop + "_end" );
+                break;
+            case "<":
+                file.println("  ifcmpge loop" + loop + "_end" );
+                break;
+            case "<=":
+                file.println("  ifcmpgt loop" + loop + "_end" );
+                break;
+            case ">=":
+                file.println("  ifcmplit loop" + loop + "_end" );
+                break;
+            case "==":
+                file.println("  ifcmpne loop" + loop + "_end" );
+                break;
+            case "!=":
+                file.println("  ifcmpeq loop" + loop + "_end" );
+                break;
+            default:
+                break;   
+        }
+
     }
 }
