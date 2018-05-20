@@ -108,7 +108,8 @@ public class SymbolTable {
 
         if(functionName.equals("main"))
             registerCounter = 1;
-        else registerCounter = 0;
+        else 
+            registerCounter = 0;
 
         //System.out.println("FUNCTION: " + functionName);
 
