@@ -242,10 +242,10 @@ void While() : {Token s1; errorIn = "WHILE()";}
 }
 
 //If ::= <IF> Exprtest <LCHAVETA> Stmtlst <RCHAVETA> ( <ELSE> <LCHAVETA> Stmtlst <RCHAVETA> )?
-void If() : {errorIn = "IF()";} 
+void If() : {Token s1; errorIn = "IF()";} 
 {
     try {
-        <IF> Exprtest() <LCHAVETA>
+        s1=<IF>{jjtThis.line = s1.beginLine;} Exprtest() <LCHAVETA>
     } catch (ParseException e) {
         System.out.print(e.toString());
         skip_to(LCHAVETA);

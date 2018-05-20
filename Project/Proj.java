@@ -734,7 +734,7 @@ public class Proj {
         for (int i = 0; i < function.jjtGetNumChildren(); i++) {
            
             if(!(function.jjtGetChild(i) instanceof ASTElement || function.jjtGetChild(i) instanceof ASTVarlist)){
-                file.print("\n");
+                //file.print("\n");
                 statementToJvm(file, functionTable, function.jjtGetChild(i));
                 //file.print("\n");
             }
@@ -743,7 +743,6 @@ public class Proj {
         //function return
         
         if (functionTable.getReturnSymbol() != null) {
-            file.print("\n");
             printVariableLoad(file, functionTable,functionTable.getReturnSymbol().getName(), "ID");
             if (functionTable.getReturnSymbol().getType() == "int") {
                 file.println("  ireturn");
@@ -753,7 +752,7 @@ public class Proj {
 
             }
         } else { //void
-            file.println("\n  return");
+            file.println("  return");
         }
 
         file.println(".end method\n");
@@ -789,9 +788,7 @@ public class Proj {
         }
         else functionHeader = functionHeader + ")V";
 
-
         return functionHeader;
-
 
     }
 
@@ -804,7 +801,11 @@ public class Proj {
             callToJvm(file, functionTable, node);
         }else if (node instanceof ASTWhile){
             whileToJvm(file, functionTable, node);
+        }else if (node instanceof ASTIf){
+            ifToJvm(file, functionTable, node);
         }
+
+        file.print("\n");
     }
 
     public void assignToJvm(PrintWriter file, SymbolTable functionTable, Node node){
@@ -1100,15 +1101,51 @@ public class Proj {
         for (int i = 0; i < whileNode.jjtGetNumChildren(); i++) {
             if(whileNode.jjtGetChild(i) instanceof ASTExprtest){
                 exprtestToJvm(file, functionTable,  whileNode.jjtGetChild(i), whileNode.line);    
+                file.print("\n"); 
             }
-            else{
-                file.print("\n");                    
+            else{                 
                 statementToJvm(file, functionTable, whileNode.jjtGetChild(i));
+                //file.print("\n");   
             } 
         }
 
-        file.println("  goto loop"+whileNode.line);
-        file.println("loop"+whileNode.line+"_end:");
+        file.println("  goto loop"+whileNode.line + "\n");
+        file.print("loop"+whileNode.line+"_end:");
+    }
+
+    public void ifToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+        ASTIf ifNode = (ASTIf) node;
+
+        boolean elseExists = false;
+
+        for (int i = 0; i < ifNode.jjtGetNumChildren(); i++) {
+            if(ifNode.jjtGetChild(i) instanceof ASTExprtest){
+                exprtestToJvm(file, functionTable,  ifNode.jjtGetChild(i), ifNode.line);    
+                file.print("\n"); 
+            }
+            else if(ifNode.jjtGetChild(i) instanceof ASTElse){
+                elseExists = true;
+                ASTElse elseNode = (ASTElse) ifNode.jjtGetChild(i);
+
+                file.println("  goto loop"+ifNode.line+"_next\n");
+                file.println("loop"+ifNode.line+"_end:");
+
+                for (int j = 0; j < elseNode.jjtGetNumChildren(); j++) {
+                    statementToJvm(file, functionTable, elseNode.jjtGetChild(j));
+                    //file.print("\n");
+                }
+
+                file.print("loop"+ifNode.line+"_next:");
+            }
+            else{                   
+                statementToJvm(file, functionTable, ifNode.jjtGetChild(i));
+                //file.print("\n"); 
+            } 
+        }
+
+        if(!elseExists)
+            file.print("loop"+ifNode.line+"_end:");
+
     }
 
     public void exprtestToJvm(PrintWriter file, SymbolTable functionTable, Node node, int loop){
@@ -1124,22 +1161,22 @@ public class Proj {
          //">" | "<" | "<=" | ">=" | "==" | "!=">
          switch(exprtest.operator){
             case ">":
-                file.println("  if_cmple loop" + loop + "_end" );
+                file.println("  if_icmple loop" + loop + "_end" );
                 break;
             case "<":
-                file.println("  if_cmpge loop" + loop + "_end" );
+                file.println("  if_icmpge loop" + loop + "_end" );
                 break;
             case "<=":
-                file.println("  if_cmpgt loop" + loop + "_end" );
+                file.println("  if_icmpgt loop" + loop + "_end" );
                 break;
             case ">=":
-                file.println("  if_cmplit loop" + loop + "_end" );
+                file.println("  if_icmplit loop" + loop + "_end" );
                 break;
             case "==":
-                file.println("  if_cmpne loop" + loop + "_end" );
+                file.println("  if_icmpne loop" + loop + "_end" );
                 break;
             case "!=":
-                file.println("  if_cmpeq loop" + loop + "_end" );
+                file.println("  if_icmpeq loop" + loop + "_end" );
                 break;
             default:
                 break;   
