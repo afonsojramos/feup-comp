@@ -13,15 +13,15 @@ module semantictest {
 
         scal1 = 5;
         scal2 = scal1 + scal1;
-        ret = a + b;                                    // err3 scalar = array + array
-        ret = a + scal1;                                // err4 scalar = array + scalar
-        ret = scal1 + b;                                // err5 scalar = scalar + array
+        ret = a + b;                                    // err6 err7 scalar = array + array
+        ret = a + scal1;                                // err8 scalar = array + scalar
+        ret = scal1 + b;                                // err9 scalar = scalar + array
         ret = scal1 * scal1;                            // scalar = scalar * scalar
         ret = -5 / -6;                                  // scalar = const / const
         ret = -5 - scal1;                               // scalar = const - scalar
         ret = scal2 * 60;                               // scalar = scalar * const
-        ret = 250 / b;                                  // err6 scalar = const / array
-        ret = a & +6;                                   // err7 scalar = array & const
+        ret = 250 / b;                                  // err10 scalar = const / array
+        ret = a & +6;                                   // err11 scalar = array & const
 
         scal2 = a.size ^ scal1;                         // scalar = size ^ scalar
         scal2 = a.size;                                 // scalar = size
@@ -40,15 +40,15 @@ module semantictest {
         scal = 2;
     }
 
-    function f() {                                      // err8 duplicate function name
+    function f() {                                      // err3 duplicate function name
 
     }
 
     function calltest() {
 
-        c(a);                                           // err9 c() not declared
-        scalar = c(arr) + not();                        // err10 err11 err12 c() not declared, not() not declared, return types invalid for operation
-        scalar = f();                                   // err13 assign scalar to array return
+        c(a);                                           // err12 c() not declared
+        scalar = c(arr) + not();                        // err13 err14 c() not declared, not() not declared, return types invalid for operation
+        scalar = f();                                   // err15 assign scalar to array return
         a = f();
         a = scalar(5, arr);                             // assigning scalar return to array
         a = a.size;
@@ -67,16 +67,16 @@ module semantictest {
         // c = b;
 
         io.println("hello");
-        scalar = scalar(5);                             // err15 wrong number of arguments
+        scalar = scalar(5);                             // err16 wrong number of arguments
         scalar = scalar(5, arr);
-        scalar = scalar(arr, arr);                      // err16 wrong argument type
-        scalar = scalar(scalar, scalar);                // err17 wrong argument type
+        scalar = scalar(arr, arr);                      // err17 wrong argument type
+        scalar = scalar(scalar, scalar);                // err18 wrong argument type
         scalar = scalar(scalar, arr);
-        scalar = scalar(newscal, newarr);               // err18 err19 undeclared locals
-        scalar = scalar(newscal, arr);                  // err20 undeclared local
+        scalar = scalar(newscal, newarr);               // err19 err20 undeclared locals
+        scalar = scalar(newscal, arr);                  // err21 undeclared local
     }
 
-    function param(a, a[], bad, let, bad[]) {           // err21 err22 duplicate param names
+    function param(a, a[], bad, let, bad[]) {           // err4 err5 duplicate param names
         io.println("hello");
     }
 
@@ -101,20 +101,20 @@ module semantictest {
 
         newarr = [nope.size];                           // err29 undeclared variable
         myscal = notdecl + arr[notdecl2];               // err30 err31 undeclared variables + TODO Extra Type mismatch (probably same error as 99)
-        myscal = scalar(global, arr) ^ undecl;          // err32 undeclared variable + TODO Extra Type mismatch (probably same error as 99)
-        notarray[0] = global + myscal;                  // err33 undeclared array access on LHS
+        myscal = scalar(global, arr) ^ undecl;          // err32 err33 undeclared variable + TODO Extra Type mismatch (probably same error as 99)
+        notarray[0] = global + myscal;                  // err34 undeclared array access on LHS
 
-        arr[undecl] = 5;                                // err34 undeclared index
+        arr[undecl] = 5;                                // err35 undeclared index
 
-        anotherarr = [N];                               // err35 undeclared variable used as size
+        anotherarr = [N];                               // err36 undeclared variable used as size
     }
 
-    function nope=noreturn() {                          // err36 return type not declared in locals / params / globals
+    function nope=noreturn() {                          // err37 return type not declared in locals / params / globals
 
         myscal = 5;
     }
 
-    function nope[]=wrongtype() {                       // err37 return type mismatch
+    function nope[]=wrongtype() {                       
 
         nope = 5;
     }
@@ -133,19 +133,19 @@ module semantictest {
 
         m = 1;
         
-        if(m==1) {
+        if(m==1) {                                     
 		    n=[20];
         } else {
-            n=2;
+            n=2;                                        // err39 type mismatch
         }
-        o = n;
+        o = n;                                          // err40 undefined err 41 type mismatch
 
         if(m==1) {
             o=3;
         } else {
-            p=2;
+            p=2;                                        // err42 not previously defined
         }
-        o = p;
+        o = p;                                          // err43 undefined because of error in if
 
         if(m==1){
             j=0;
