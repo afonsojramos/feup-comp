@@ -10,8 +10,6 @@
  * mechanisms so long as you retain the public fields.
  */
 
-package AST;
-
 import java.io.*;
 import java.util.*;
 import java.nio.charset.Charset;

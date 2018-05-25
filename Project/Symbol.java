@@ -1,5 +1,3 @@
-package AST; 
- 
 public class Symbol {
     private String name = null;
     private String type;
