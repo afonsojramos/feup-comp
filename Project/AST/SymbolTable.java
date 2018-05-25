@@ -1,6 +1,8 @@
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+package AST; 
+ 
 public class SymbolTable {
     private LinkedHashMap<String, Symbol> parameters;
     private LinkedHashMap<String, Symbol> variables;
