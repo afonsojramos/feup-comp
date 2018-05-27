@@ -756,7 +756,7 @@ public class Proj {
         } else { //void
             file.println("  return");
         }
-        file.println("STACK: " + functionTable.getStack());
+        //file.println("STACK: " + functionTable.getStack());
         file.println(".end method\n");
 
     }
