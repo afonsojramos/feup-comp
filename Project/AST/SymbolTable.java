@@ -6,6 +6,8 @@ public class SymbolTable {
     private LinkedHashMap<String, Symbol> variables;
     private Symbol returnSymbol = null;
     private boolean returned = false;
+    private int lastRegister;
+    private int stack = 1;
 
     public SymbolTable() {
         this.parameters = new LinkedHashMap<String, Symbol>();
@@ -133,8 +135,27 @@ public class SymbolTable {
             //System.out.println("RETURN:");
             this.returnSymbol.setRegister(registerCounter);
             //System.out.println(this.returnSymbol.getName() + " - " + this.returnSymbol.getRegister());
+            registerCounter ++;
             
         }
+
+        this.lastRegister=registerCounter;
            
+    }
+
+    public int getLastRegister() {
+        return lastRegister;
+    }
+
+    public void setLastRegister(int lastRegister) {
+        this.lastRegister = lastRegister;
+    }
+
+    public int getStack(){
+        return stack;
+    }
+
+    public void setMaxStack(int stack){
+        this.stack = Math.max(this.stack, stack);
     }
 }

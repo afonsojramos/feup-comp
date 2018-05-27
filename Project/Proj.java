@@ -6,6 +6,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.lang.model.util.ElementScanner6;
+
 import java.util.Iterator;
 
 public class Proj {
@@ -348,9 +350,9 @@ public class Proj {
                                                 deepAccess = true;
                                             }
                                         }
-
-                                        if ((functionSymbolTable.getAcessType(access.name) != type && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type) && !deepAccess)
-                                            printSemanticError(access.name, access.line,"This variable is an array, operations can only be done with scalars.");           
+                                        //TDOO: quando array = array dá erro e não devia
+                                        //if ((functionSymbolTable.getAcessType(access.name) != type && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type) && !deepAccess)
+                                          //  printSemanticError(access.name, access.line,"This variable is an array, operations can only be done with scalars.");           
                                         
                                     } 
                                 } 
@@ -724,7 +726,7 @@ public class Proj {
 
         int nrLocals = nrParameters + nrVariables + nrReturn;
         if(function.name.equals("main")) nrLocals++;
-        int nrStack = nrLocals; //TODO: alterar para nÃºmero correto
+        int nrStack = 6;
 
         file.println("  .limit stack " + nrStack);
         file.println("  .limit locals " + nrLocals);
@@ -754,7 +756,7 @@ public class Proj {
         } else { //void
             file.println("  return");
         }
-
+        file.println("STACK: " + functionTable.getStack());
         file.println(".end method\n");
 
     }
@@ -815,7 +817,7 @@ public class Proj {
             ASTRhs rhs = (ASTRhs) assign.jjtGetChild(1);
             ASTAccess access = (ASTAccess) assign.jjtGetChild(0);
 
-            if(assign.jjtGetChild(0).jjtGetNumChildren() == 1 && assign.jjtGetChild(0).jjtGetChild(0) instanceof ASTArrayAccess){ //arrayaccess special case         
+            if(access.jjtGetNumChildren() == 1 && access.jjtGetChild(0) instanceof ASTArrayAccess){ //arrayaccess special case         
                 printVariableLoad(file, functionTable, access.name, "ID"); //reference
                 arrayaccessToJvm(file,functionTable, access.jjtGetChild(0));
                 rhsToJvm(file, functionTable, assign.jjtGetChild(1));
@@ -826,11 +828,62 @@ public class Proj {
                 accessToJvm(file, functionTable, assign.jjtGetChild(0), "Store");
                }  
             }
-            else{
+            else if(initializeAllArray(file,functionTable, assign)){
+
+             
+                
+            }else{
                 rhsToJvm(file, functionTable, assign.jjtGetChild(1));
                 accessToJvm(file, functionTable, assign.jjtGetChild(0), "Store");
             }
         }
+    }
+
+    public boolean initializeAllArray(PrintWriter file, SymbolTable functionTable,ASTAssign assign){
+
+        if (assign.jjtGetChild(0) instanceof ASTAccess && assign.jjtGetChild(1) instanceof ASTRhs){
+            ASTRhs rhs = (ASTRhs) assign.jjtGetChild(1);
+            ASTAccess access = (ASTAccess) assign.jjtGetChild(0);
+
+            if(access.jjtGetNumChildren() == 0 && rhs.jjtGetNumChildren() == 1 && rhs.jjtGetChild(0) instanceof ASTTerm){
+                ASTTerm term = (ASTTerm) rhs.jjtGetChild(0);
+                String name = access.name;
+                String value = getTerm(term);
+                String regex = "\\d+";
+                if(value.matches(regex)){
+                    if (functionTable != null && functionTable.getFromAll(name) != null && functionTable.getFromAll(name).getType().equals("array")) { //Local Variables
+                        
+                        int indexRegister = functionTable.getLastRegister();
+                        int arrayRegister = functionTable.getFromAll(name).getRegister();
+
+                        file.println("  iconst_0");
+                        file.println("  istore " + indexRegister);
+                        file.println("loop_" + name + "_" + value + "_" + indexRegister +":");
+                        file.println("  iload " + indexRegister);
+                        file.println("  aload " + arrayRegister);
+                        file.println("  arraylength");
+                        file.println("  if_icmpge loop_end_" + name + "_" + value + "_" + indexRegister);
+                        file.println("  aload " + arrayRegister);
+                        file.println("  iload " + indexRegister);
+                        file.println("  bipush " + value);
+                        file.println("  iastore");
+                        file.println("  iinc " + indexRegister);
+                        file.println("  goto loop_"+ name + "_" + value + "_" + indexRegister);
+                        file.println("loop_end_" + name + "_" + value+ "_" + indexRegister + ":");
+
+                        indexRegister ++;
+                        functionTable.setLastRegister(indexRegister);
+
+                        functionTable.setMaxStack(3);
+                        
+                            
+                        return true;
+                    }
+
+                }
+            }
+        }
+        return false;
     }
 
     public boolean isInc(PrintWriter file, SymbolTable functionTable, ASTRhs rhs, String accessName){
@@ -937,6 +990,8 @@ public class Proj {
                 default:
                     break;
             }
+
+            functionTable.setMaxStack(3);            
         
         }
     }
@@ -1014,6 +1069,8 @@ public class Proj {
 
                 ASTIndex index = (ASTIndex) arrayAccess.jjtGetChild(0);
 
+                functionTable.setMaxStack(3);
+
                 if(!index.value.equals("")){ //Size is an integer
                     printVariableLoad(file, functionTable, index.value, "Integer");
 
@@ -1036,6 +1093,7 @@ public class Proj {
             argumentList = (ASTArgumentList) call.jjtGetChild(0);
             for(int i = 0; i < argumentList.jjtGetNumChildren(); i++){
                 ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
+                functionTable.setMaxStack(argumentList.jjtGetNumChildren());
                 printVariableLoad(file,functionTable,argument.name, argument.type);
             }
         }
@@ -1243,8 +1301,10 @@ public class Proj {
 
             if (number >= 0 && number <= 5)
                 file.println("  iconst_" + number);
-            else
+            else if(number >= -128 && number <= 127)
                 file.println("  bipush " + number);
+            else
+                file.println("  lcd " + number);
 
         } else if (type.equals("String")) {
 
