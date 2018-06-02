@@ -8,7 +8,7 @@ options{
 
 PARSER_BEGIN(yal2jvm)
 
-package AST;
+//package AST;
 
 public class yal2jvm {
     public static String errorIn = "";

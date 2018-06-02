@@ -1,10 +1,7 @@
 #!/bin/bash
 
-cd Project/AST
+cd Project
 
 jjtree proj.jjt
 javacc proj.jj
-
-cd ..
-
 javac *.java
