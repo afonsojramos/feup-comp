@@ -1,12 +1,8 @@
 import java.io.*;
 import java.util.*;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.lang.model.util.ElementScanner6;
+import AST.*;
 
 import java.util.Iterator;
 
@@ -24,7 +20,6 @@ public class Proj {
     private HashMap<String, Symbol> ifVarlist = new HashMap<String, Symbol>();
     private String moduleName;
     private int errorCount = 0;
-    private int loopId = 1;
 
     public static void main(String args[]) throws ParseException {
         yal2jvm parser;
@@ -40,11 +35,11 @@ public class Proj {
                 ANSI_CYAN = "\u001B[36m";
                 ANSI_YELLOW = "\u001B[33m";
             }
-            fileName = args[0];
+            ParseException.filename = args[0];
             System.out.println(
                     ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " Reading the file " + args[0] + " ..." + ANSI_RESET);
             try {
-                parser = new yal2jvm(new java.io.FileInputStream(fileName));
+                parser = new yal2jvm(new java.io.FileInputStream(args[0]));
             } catch (java.io.FileNotFoundException e) {
                 System.out.println(
                         ANSI_CYAN + "yal2jvm:" + ANSI_RED + " The file " + args[0] + " was not found." + ANSI_RESET);
@@ -394,7 +389,7 @@ public class Proj {
 
             } */
 
-            if (canAddVariable(functionSymbolTable, name, type)) {
+            /*if (canAddVariable(functionSymbolTable, name, type)) {
                 if (assign.parent instanceof ASTIf){
                     functionSymbolTable.addVariable(name, type);
                 }
@@ -414,7 +409,7 @@ public class Proj {
                     functionSymbolTable.addVariable(name, type);
                 }
 
-            }
+            }*/
         }
 
         else if (node instanceof ASTExprtest) {
