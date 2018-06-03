@@ -130,9 +130,7 @@ public class ParseException extends Exception {
   	} catch (java.io.IOException e) {
   		return retval;
   	}
-    
-    retval += (currentToken.next.beginLine - 1) + "\n" + s + "^\n";
-    
+        
     retval += "Encountered \"";
     Token tok = currentToken.next;
     for (int i = 0; i < maxSize; i++) {
