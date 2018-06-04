@@ -1,9 +1,17 @@
 module test
 {
-        b=[10];
-
-        function f(){
-               b=10;
-        }
+        function sum = sum_array(A[])
+        {
+                i=0;
+                sum=0;
+                while(i < A.size) {
+                        
+                }
+        }        
         
 }
+
+
+
+
+  

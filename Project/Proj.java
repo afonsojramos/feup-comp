@@ -1168,7 +1168,7 @@ public class Proj {
 
             for(int i = 0; i < argumentList.jjtGetNumChildren(); i++){
                 ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
-                functionTable.setMaxStack(argumentList.jjtGetNumChildren());
+                functionTable.setMaxStack(argumentList.jjtGetNumChildren() + 1);
                 printVariableLoad(file,functionTable,argument.name, argument.type);
             }
         } else if(call.jjtGetNumChildren() == 0 && call.function.equals("main")){
