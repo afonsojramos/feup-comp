@@ -389,11 +389,11 @@ public class Proj {
 
             } */
 
-            /*if (canAddVariable(functionSymbolTable, name, type)) {
-                if (assign.parent instanceof ASTIf){
+            if (canAddVariable(functionSymbolTable, name, type)) {
+                if (assign.jjtGetParent() instanceof ASTIf){
                     functionSymbolTable.addVariable(name, type);
                 }
-                else if (assign.parent instanceof ASTElse){
+                else if (assign.jjtGetParent() instanceof ASTElse){
                     if (functionSymbolTable.getFromAll(name) != null && functionSymbolTable.getFromAll(name).getType() != type){
                         printSemanticError(name, assign.line, "Type of Variable different from IF container.");
                         functionSymbolTable.removeVariable(name);
@@ -402,14 +402,14 @@ public class Proj {
                         printSemanticError(name, assign.line, "Variable has to be in if and else");
                     }
                 }  
-                else if (assign.parent instanceof ASTWhile) {
+                else if (assign.jjtGetParent() instanceof ASTWhile) {
                     functionSymbolTable.addVariable(name, type);
                 }             
                 else {
                     functionSymbolTable.addVariable(name, type);
                 }
 
-            }*/
+            }
         }
 
         else if (node instanceof ASTExprtest) {
