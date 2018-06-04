@@ -875,20 +875,23 @@ public class Proj {
                         int indexRegister = functionTable.getLastRegister();
                         int arrayRegister = functionTable.getFromAll(name).getRegister();
 
+                        functionTable.incLoopCounter();
+                        int loop_nr = functionTable.getLoopCounter();
+
                         file.println("  iconst_0");
                         file.println("  istore " + indexRegister);
-                        file.println("loop_" + name + "_" + value + "_" + indexRegister +":");
+                        file.println("loop"+loop_nr+":");
                         file.println("  iload " + indexRegister);
                         file.println("  aload " + arrayRegister);
                         file.println("  arraylength");
-                        file.println("  if_icmpge loop_end_" + name + "_" + value + "_" + indexRegister);
+                        file.println("  if_icmpge loop" + loop_nr+"_end");
                         file.println("  aload " + arrayRegister);
                         file.println("  iload " + indexRegister);
                         file.println("  bipush " + value);
                         file.println("  iastore");
                         file.println("  iinc " + indexRegister);
-                        file.println("  goto loop_"+ name + "_" + value + "_" + indexRegister);
-                        file.println("loop_end_" + name + "_" + value+ "_" + indexRegister + ":");
+                        file.println("  goto loop"+ loop_nr);
+                        file.println("loop"+ loop_nr+ "_end:");
 
                         indexRegister ++;
                         functionTable.setLastRegister(indexRegister);
@@ -1185,10 +1188,14 @@ public class Proj {
     public void whileToJvm(PrintWriter file, SymbolTable functionTable, Node node){
 
         ASTWhile whileNode = (ASTWhile) node;
-        file.println("loop"+whileNode.line+":");
+
+        functionTable.incLoopCounter();        
+        int loop_nr=functionTable.getLoopCounter();
+
+        file.println("loop"+loop_nr+":");
         for (int i = 0; i < whileNode.jjtGetNumChildren(); i++) {
             if(whileNode.jjtGetChild(i) instanceof ASTExprtest){
-                exprtestToJvm(file, functionTable,  whileNode.jjtGetChild(i), whileNode.line);    
+                exprtestToJvm(file, functionTable,  whileNode.jjtGetChild(i), loop_nr);    
                 file.print("\n"); 
             }
             else{                 
@@ -1197,8 +1204,10 @@ public class Proj {
             } 
         }
 
-        file.println("  goto loop"+whileNode.line + "\n");
-        file.print("loop"+whileNode.line+"_end:");
+        file.println("  goto loop"+loop_nr + "\n");
+        file.print("loop"+loop_nr+"_end:");
+
+
     }
 
     public void ifToJvm(PrintWriter file, SymbolTable functionTable, Node node){
@@ -1206,24 +1215,27 @@ public class Proj {
 
         boolean elseExists = false;
 
+        functionTable.incLoopCounter();
+        int loop_nr=functionTable.getLoopCounter();
+
         for (int i = 0; i < ifNode.jjtGetNumChildren(); i++) {
             if(ifNode.jjtGetChild(i) instanceof ASTExprtest){
-                exprtestToJvm(file, functionTable,  ifNode.jjtGetChild(i), ifNode.line);    
+                exprtestToJvm(file, functionTable,  ifNode.jjtGetChild(i), loop_nr);    
                 file.print("\n"); 
             }
             else if(ifNode.jjtGetChild(i) instanceof ASTElse){
                 elseExists = true;
                 ASTElse elseNode = (ASTElse) ifNode.jjtGetChild(i);
 
-                file.println("  goto loop"+ifNode.line+"_next\n");
-                file.println("loop"+ifNode.line+"_end:");
+                file.println("  goto loop"+loop_nr+"_next\n");
+                file.println("loop"+loop_nr+"_end:");
 
                 for (int j = 0; j < elseNode.jjtGetNumChildren(); j++) {
                     statementToJvm(file, functionTable, elseNode.jjtGetChild(j));
                     //file.print("\n");
                 }
 
-                file.print("loop"+ifNode.line+"_next:");
+                file.print("loop"+loop_nr+"_next:");
             }
             else{                   
                 statementToJvm(file, functionTable, ifNode.jjtGetChild(i));
@@ -1232,7 +1244,7 @@ public class Proj {
         }
 
         if(!elseExists)
-            file.print("loop"+ifNode.line+"_end:");
+            file.print("loop"+loop_nr+"_end:");
 
     }
 

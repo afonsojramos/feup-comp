@@ -1,15 +1,15 @@
 module test
 {
-        x = 1;
-	function f() {
-		if (x > 0) {
-			x = x - 1;
-			main();
-		}
-	}
+        function f(){
+                a=[10];
 
-	function main() {
-		io.println("Call main");
-		f();
-	}
+                i=0;
+                while(i<6){
+                        j=0;
+                        while(j<9){
+                                a=5;
+                        }
+                }
+        }
+        
 }

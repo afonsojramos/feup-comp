@@ -53,7 +53,7 @@ PARSER_END(yal2jvm)
     }
 
 /* reserved words */
-<DEFAULT> TOKEN : {
+<DEFAULT> TOKEN [IGNORE_CASE] : {
     <RELA_OP: ">" | "<" | "<=" | ">=" | "==" | "!=">
     | <ADDSUB_OP: "+" | "-">
     | <ARITH_OP: "*" | "/" | "<<" | ">>" | ">>>">

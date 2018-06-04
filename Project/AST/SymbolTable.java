@@ -10,6 +10,7 @@ public class SymbolTable {
     private boolean returned = false;
     private int lastRegister;
     private int stack = 1;
+    private int loopCounter = -1;
 
     public SymbolTable() {
         this.parameters = new LinkedHashMap<String, Symbol>();
@@ -159,5 +160,13 @@ public class SymbolTable {
 
     public void setMaxStack(int stack){
         this.stack = Math.max(this.stack, stack);
+    }
+
+    public int getLoopCounter() {
+        return loopCounter;
+    }
+
+    public void incLoopCounter() {
+        this.loopCounter ++;
     }
 }
