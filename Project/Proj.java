@@ -215,7 +215,7 @@ public class Proj {
                     ASTAccess access = (ASTAccess) assign.jjtGetChild(i);
                     name = access.name;
 
-                    if (functionSymbolTable.getReturnSymbol() != null && functionSymbolTable.getReturnSymbol().getName().equals(name)){
+                    if (functionSymbolTable.getReturnSymbol() != null && functionSymbolTable.getReturnSymbol().getName().equals(name) && functionSymbolTable.getReturnSymbol().getType().equals("int")){
                         functionSymbolTable.getReturnSymbol().setInit();
                     }
 
@@ -257,6 +257,10 @@ public class Proj {
                         if (rhs.jjtGetChild(j) instanceof ASTArraySize) { 
                             ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(j);
 
+                            if (functionSymbolTable.getReturnSymbol() != null && functionSymbolTable.getReturnSymbol().getName().equals(name) && functionSymbolTable.getReturnSymbol().getType().equals("array")){
+                                functionSymbolTable.getReturnSymbol().setInit();
+                            }
+
                             if (arrayIndex)
                                 printSemanticError(arraySize.name, arraySize.line, "Undefined variable.");
                            
@@ -286,6 +290,10 @@ public class Proj {
 
                         if (rhs.jjtGetChild(j) instanceof ASTTerm) {
                             ASTTerm term = (ASTTerm) rhs.jjtGetChild(j);
+
+                            if (functionSymbolTable.getReturnSymbol() != null && functionSymbolTable.getReturnSymbol().getName().equals(name) && functionSymbolTable.getReturnSymbol().getType().equals("array") && !functionSymbolTable.getReturnSymbol().getInit()){
+                                printSemanticError(name, assign.line, "Function type mismatch...");
+                            }
 
                             if (term.jjtGetNumChildren() > 0 && term.jjtGetChild(0) instanceof ASTCall) {
                                 ASTCall call = (ASTCall) term.jjtGetChild(0);
@@ -349,8 +357,8 @@ public class Proj {
                                             }
                                         }
                                         //TDOO: quando array = array dá erro e não devia
-                                        //if ((functionSymbolTable.getAcessType(access.name) != type && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type) && !deepAccess)
-                                          //  printSemanticError(access.name, access.line,"This variable is an array, operations can only be done with scalars.");           
+                                        /* if ((functionSymbolTable.getAcessType(access.name) != type && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type) && !deepAccess)
+                                            printSemanticError(access.name, access.line,"This variable is an array, operations can only be done with scalars.");  */          
                                         
                                     } 
                                 } 
