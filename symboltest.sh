@@ -1,10 +1,17 @@
 #!/bin/bash
 
-cd Project
+#cd Project
 
+#jjtree proj.jjt
+#javacc proj.jj
+#javac *.java
+
+cd Project
 jjtree proj.jjt
+cd AST
 javacc proj.jj
-javac *.java
+cd ..
+javac Proj.java
 
 #java Proj yal-eval/SemanticTests/ftl.yal color
 #java Proj yal-eval/all.yal color
