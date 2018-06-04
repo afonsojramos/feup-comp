@@ -889,7 +889,7 @@ public class Proj {
                         file.println("  iload " + indexRegister);
                         file.println("  bipush " + value);
                         file.println("  iastore");
-                        file.println("  iinc " + indexRegister);
+                        file.println("  iinc " + indexRegister +" 1");
                         file.println("  goto loop"+ loop_nr);
                         file.println("loop"+ loop_nr+ "_end:");
 
@@ -900,6 +900,57 @@ public class Proj {
                         
                             
                         return true;
+                    }
+                    else{
+
+                        Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
+
+                        if(globalVariable != null){
+                            String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
+
+                    
+                            int indexRegister = functionTable.getLastRegister();
+                            //int arrayRegister = functionTable.getFromAll(name).getRegister();
+    
+                            functionTable.incLoopCounter();
+                            int loop_nr = functionTable.getLoopCounter();
+    
+                            file.println("  iconst_0");
+                            file.println("  istore " + indexRegister);
+                            file.println("loop"+loop_nr+":");
+                            file.println("  iload " + indexRegister);
+    
+                            //file.println("  aload " + arrayRegister);
+                            file.println("  getstatic " + this.moduleName.substring(9) + "/" + globalVariable.getName() + globalVariableType);
+    
+                            file.println("  arraylength");
+                            file.println("  if_icmpge loop" + loop_nr+"_end");
+                            
+                            //file.println("  aload " + arrayRegister);
+                            file.println("  getstatic " + this.moduleName.substring(9) + "/" + globalVariable.getName() + globalVariableType);
+                            
+                            file.println("  iload " + indexRegister);
+                            file.println("  bipush " + value);
+                            
+                            //file.println("  iastore");
+                            file.println("  putstatic " + this.moduleName.substring(9) + "/" + globalVariable.getName() + globalVariableType);
+
+                            file.println("  iinc " + indexRegister + " 1");
+                            file.println("  goto loop"+ loop_nr);
+                            file.println("loop"+ loop_nr+ "_end:");
+    
+                            indexRegister ++;
+                            functionTable.setLastRegister(indexRegister);
+    
+                            functionTable.setMaxStack(3);
+                            
+                                
+                            return true;
+
+                        }
+
+                       
+
                     }
 
                 }

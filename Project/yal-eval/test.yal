@@ -1,15 +1,9 @@
 module test
 {
-        function f(){
-                a=[10];
+        b=[10];
 
-                i=0;
-                while(i<6){
-                        j=0;
-                        while(j<9){
-                                a=5;
-                        }
-                }
+        function f(){
+               b=10;
         }
         
 }
