@@ -13,5 +13,7 @@ javac Proj.java
 
 java Proj yal-eval/MyFirstYalExamples/array1.yal color
 java Proj yal-eval/MyFirstYalExamples/array2.yal color
-#java Proj yal-eval/MyFirstYalExamples/aval1.yal color
-#java Proj yal-eval/test.yal color
+java Proj yal-eval/MyFirstYalExamples/aval1.yal color
+java Proj yal-eval/MyFirstYalExamples/aval2.yal color
+java Proj yal-eval/MyFirstYalExamples/programa1.yal color
+java Proj yal-eval/MyFirstYalExamples/programa2.yal color

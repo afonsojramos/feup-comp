@@ -2,7 +2,10 @@ import java.io.*;
 import java.util.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.file.Files;
 import AST.*;
+import java.nio.file.Paths;
+import java.util.List;
 
 import java.util.Iterator;
 
@@ -583,11 +586,13 @@ public class Proj {
         return null;
     }
 
+
     public void yalToJasmin(SimpleNode root) {
 
-        PrintWriter file = getFile();
-
+    
         if (root != null && root instanceof ASTModule) {
+            PrintWriter file = getFile();
+
             ASTModule module = (ASTModule) root;
 
             file.println(".class public " +  this.moduleName.substring(9));
@@ -620,9 +625,20 @@ public class Proj {
                 }
             }
 
+            file.close();
+
+            for (int i = 0; i < module.jjtGetNumChildren(); i++) {
+
+                if (module.jjtGetChild(i) instanceof ASTFunction) {
+                    ASTFunction function = (ASTFunction) module.jjtGetChild(i);
+                    SymbolTable functionTable = this.symbolTables.get(function.name);
+                    writeStackNumber(functionTable, function.name);
+                }
+            } 
+
         }
 
-        file.close();
+       
     }
 
     public void declarationsToJvm(PrintWriter file, ASTDeclaration declaration, HashMap<String, String> staticArrays) {
@@ -667,8 +683,8 @@ public class Proj {
     public void initDeclarationsArrays(PrintWriter file, HashMap<String,String> staticArrays){
 
         file.println("\n.method static public <clinit>()V");
-        file.println("  .limit locals " + staticArrays.size() + "\n");        
-        file.println("  .limit stack " + staticArrays.size());
+        file.println("  .limit locals " + 0 + "\n");        
+        file.println("  .limit stack " + 3);
 
         for (Map.Entry<String, String> entry : staticArrays.entrySet()) {
 
@@ -724,7 +740,7 @@ public class Proj {
         int nrStack = 6;
 
         file.println("  .limit locals " + nrLocals);       
-        file.println("  .limit stack " + nrStack);
+        file.println("stack_" + function.name);
 
 
         //function statements
@@ -751,9 +767,42 @@ public class Proj {
         } else { //void
             file.println("  return");
         }
-        file.println("STACK: " + functionTable.getStack());
         file.println(".end method\n");
 
+    }
+
+
+    public void writeStackNumber(SymbolTable functionTable, String functionName){
+        int stackNr = functionTable.getStack();
+
+
+        try {
+            File dir = new File("jasmin");
+            if (!dir.exists())
+                dir.mkdirs();
+
+            File file = new File("jasmin/" + this.moduleName.substring(9) + ".j");
+            if (!file.exists())
+                file.createNewFile();
+
+
+            List<String> lines = Files.readAllLines(file.toPath());
+            
+            for(int i = 0; i < lines.size(); i++){
+
+                if(lines.get(i).equals("stack_"+functionName)){
+                    lines.set(i, "  .limit stack " + stackNr);
+                }
+
+            }
+
+            Files.write(file.toPath(), lines);
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+       
     }
 
     public String functionHeader(String functionName){
