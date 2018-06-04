@@ -1,9 +1,10 @@
 #!/bin/bash
 
 cd Project
-
 jjtree proj.jjt
+cd AST
 javacc proj.jj
-javac *.java
+cd ..
+javac Proj.java
 
 java Proj yal-eval/MyFirstYalExamples_1/aval6_err.yal 
