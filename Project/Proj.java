@@ -1111,11 +1111,14 @@ public class Proj {
         if(call.jjtGetNumChildren() > 0 && call.jjtGetChild(0) instanceof ASTArgumentList){
 
             argumentList = (ASTArgumentList) call.jjtGetChild(0);
+
             for(int i = 0; i < argumentList.jjtGetNumChildren(); i++){
                 ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
                 functionTable.setMaxStack(argumentList.jjtGetNumChildren());
                 printVariableLoad(file,functionTable,argument.name, argument.type);
             }
+        } else if(call.jjtGetNumChildren() == 0 && call.function.equals("main")){
+            file.println("  aconst_null");
         }
 
         if (call.module.equals("") && symbolTables.get(call.function)!=null) { //function belongs to this module
@@ -1328,13 +1331,16 @@ public class Proj {
         } else if (type.equals("Integer")) {
 
             int number = Integer.parseInt(name);
-
-            if (number >= 0 && number <= 5)
+            if(number == -1){
+                file.println("  iconst_m1");                
+            }else if (number >= 0 && number <= 5)
                 file.println("  iconst_" + number);
             else if(number >= -128 && number <= 127)
                 file.println("  bipush " + number);
+            else if(number >= -32768 && number <= 32767)
+                file.println("  sipush " + number);
             else
-                file.println("  lcd " + number);
+                file.println("  ldc " + number);
 
         } else if (type.equals("String")) {
 

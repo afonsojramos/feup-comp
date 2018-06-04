@@ -1,13 +1,15 @@
 module test
 {
-	function test_function() {
-        ext.f3(2,"def");
-        
-        a=ext.f1(1,"abc");
+        x = 1;
+	function f() {
+		if (x > 0) {
+			x = x - 1;
+			main();
+		}
+	}
 
-        b=[10];
-        b=ext.f2(2,"def"); 
-
-        c = ext.f1(1,"abc") + ext.f2(2,"def");
+	function main() {
+		io.println("Call main");
+		f();
 	}
 }
