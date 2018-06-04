@@ -1,0 +1,13 @@
+module test
+{
+	function test_function() {
+        ext.f3(2,"def");
+        
+        a=ext.f1(1,"abc");
+
+        b=[10];
+        b=ext.f2(2,"def"); 
+
+        c = ext.f1(1,"abc") + ext.f2(2,"def");
+	}
+}

@@ -800,7 +800,7 @@ public class Proj {
         if (node instanceof ASTAssign) { 
             assignToJvm(file, functionTable, node);
         }else if (node instanceof ASTCall){
-            callToJvm(file, functionTable, node);
+            callToJvm(file, functionTable, node, "void");
         }else if (node instanceof ASTWhile){
             whileToJvm(file, functionTable, node);
         }else if (node instanceof ASTIf){
@@ -831,12 +831,36 @@ public class Proj {
             else if(initializeAllArray(file,functionTable, assign)){
 
              
-                
+            }else if(externalFunctionArray(file, functionTable, rhs, access)){ //external call returns array special case
+            
             }else{
                 rhsToJvm(file, functionTable, assign.jjtGetChild(1));
                 accessToJvm(file, functionTable, assign.jjtGetChild(0), "Store");
             }
         }
+    }
+
+    public boolean externalFunctionArray(PrintWriter file, SymbolTable functionTable, ASTRhs rhs, ASTAccess access){
+        if(rhs.jjtGetNumChildren() == 1 && rhs.jjtGetChild(0) instanceof ASTTerm){ 
+            ASTTerm term = (ASTTerm) rhs.jjtGetChild(0);
+
+            if(term.jjtGetNumChildren() == 1 && term.jjtGetChild(0) instanceof ASTCall){
+
+                ASTCall call = (ASTCall) term.jjtGetChild(0);
+
+                String name = access.name;
+                if (functionTable != null && functionTable.getFromAll(name) != null) { 
+                    Symbol variable = functionTable.getFromAll(name);
+                    if(variable.getType().equals("array")){ 
+                        callToJvm(file, functionTable, call, "array");
+                        accessToJvm(file, functionTable, access, "Store");
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     public boolean initializeAllArray(PrintWriter file, SymbolTable functionTable,ASTAssign assign){
@@ -1029,12 +1053,13 @@ public class Proj {
             if (term.jjtGetChild(0) instanceof ASTAccess) {
                 accessToJvm(file, functionTable, term.jjtGetChild(0), "Load");
             } else if(term.jjtGetChild(0) instanceof ASTCall){
-                callToJvm(file, functionTable, term.jjtGetChild(0));
+                callToJvm(file, functionTable, term.jjtGetChild(0), "int");
             }
         }
 
 
     }
+
 
     public void accessToJvm(PrintWriter file, SymbolTable functionTable, Node node, String mode){
         ASTAccess access = (ASTAccess) node;
@@ -1083,7 +1108,7 @@ public class Proj {
         }
     }
 
-    public void callToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+    public void callToJvm(PrintWriter file, SymbolTable functionTable, Node node, String returnMode){
 
         ASTCall call = (ASTCall) node;
         ASTArgumentList argumentList = null;
@@ -1098,15 +1123,15 @@ public class Proj {
             }
         }
 
-        if (call.module.equals("") && symbolTables.get(call.function)!=null) {
-            file.println("  invokestatic " + this.moduleName.substring(9) + "/" + functionHeaderInvoke(call.function, argumentList));
+        if (call.module.equals("") && symbolTables.get(call.function)!=null) { //function belongs to this module
+            file.println("  invokestatic " + this.moduleName.substring(9) + "/" + functionHeaderInvoke(call.function, argumentList, returnMode));
         } else {
-            file.println("  invokestatic " + call.module +"/" + functionHeaderInvoke(call.function, argumentList));
+            file.println("  invokestatic " + call.module +"/" + functionHeaderInvoke(call.function, argumentList, returnMode));
         }
 
     }
 
-    public String functionHeaderInvoke(String functionName, ASTArgumentList arguments) {
+    public String functionHeaderInvoke(String functionName, ASTArgumentList arguments, String returnMode) {
 
         SymbolTable functionTable = this.symbolTables.get(functionName);
         String functionHeader = functionName + "(";
@@ -1135,7 +1160,7 @@ public class Proj {
         }
        
 
-        if(functionTable != null && functionTable.getReturnSymbol() != null){
+        if(functionTable != null){ //form this mdule
             Symbol returnSymbol = functionTable.getReturnSymbol();
             if (returnSymbol != null) {
                 if (returnSymbol.getType().equals("int"))
@@ -1144,8 +1169,15 @@ public class Proj {
                     functionHeader = functionHeader + ")[I";
             } else
                 functionHeader = functionHeader + ")V";
-        }
-        else functionHeader = functionHeader + ")V";
+        } else{ //from external module
+            if(returnMode.equals("void")){
+                functionHeader = functionHeader + ")V";                
+            }else if(returnMode.equals("int")){
+                functionHeader = functionHeader + ")I";                                
+            } else if(returnMode.equals("array")){
+                functionHeader = functionHeader + ")[I";                                
+            }
+        } 
 
 
         return functionHeader;
