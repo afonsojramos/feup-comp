@@ -1,0 +1,18 @@
+CHECKPOINT 3 FEEDBACK
+=====================
+Class 1 - Group 54
+
+These notes are based on an analysis of commit 7637da4e60cd21310805fa0793b3e754b9db52df.
+If you believe this is an error, contact your class teacher.
+=====================
+
+High-priority:
+	- "input-as-output.yal": The returned variable should be 0, not 1.
+	- "call-main.yal": Incorrect signature when calling "main". The function should take a
+single dummy "String[]" argument (and a corresponding null value should be pushed onto the
+stack).
+	- "lcd" should be "ldc"
+
+Low-priority:
+	- Consider using shorter branch instructions (e.g., if_cmp_gt) for comparisons with 0.
+	- Consider using "iconst_m1" to load the "-1" literal.
