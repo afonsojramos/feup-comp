@@ -2,7 +2,10 @@ import java.io.*;
 import java.util.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.file.Files;
 import AST.*;
+import java.nio.file.Paths;
+import java.util.List;
 
 import java.util.Iterator;
 
@@ -590,11 +593,13 @@ public class Proj {
         return null;
     }
 
+
     public void yalToJasmin(SimpleNode root) {
 
-        PrintWriter file = getFile();
-
+    
         if (root != null && root instanceof ASTModule) {
+            PrintWriter file = getFile();
+
             ASTModule module = (ASTModule) root;
 
             file.println(".class public " +  this.moduleName.substring(9));
@@ -627,9 +632,20 @@ public class Proj {
                 }
             }
 
+            file.close();
+
+            for (int i = 0; i < module.jjtGetNumChildren(); i++) {
+
+                if (module.jjtGetChild(i) instanceof ASTFunction) {
+                    ASTFunction function = (ASTFunction) module.jjtGetChild(i);
+                    SymbolTable functionTable = this.symbolTables.get(function.name);
+                    writeStackNumber(functionTable, function.name);
+                }
+            } 
+
         }
 
-        file.close();
+       
     }
 
     public void declarationsToJvm(PrintWriter file, ASTDeclaration declaration, HashMap<String, String> staticArrays) {
@@ -674,8 +690,8 @@ public class Proj {
     public void initDeclarationsArrays(PrintWriter file, HashMap<String,String> staticArrays){
 
         file.println("\n.method static public <clinit>()V");
-        file.println("  .limit locals " + staticArrays.size() + "\n");        
-        file.println("  .limit stack " + staticArrays.size());
+        file.println("  .limit locals " + 0 + "\n");        
+        file.println("  .limit stack " + 3);
 
         for (Map.Entry<String, String> entry : staticArrays.entrySet()) {
 
@@ -731,7 +747,7 @@ public class Proj {
         int nrStack = 6;
 
         file.println("  .limit locals " + nrLocals);       
-        file.println("  .limit stack " + nrStack);
+        file.println("stack_" + function.name);
 
 
         //function statements
@@ -758,9 +774,42 @@ public class Proj {
         } else { //void
             file.println("  return");
         }
-        file.println("STACK: " + functionTable.getStack());
         file.println(".end method\n");
 
+    }
+
+
+    public void writeStackNumber(SymbolTable functionTable, String functionName){
+        int stackNr = functionTable.getStack();
+
+
+        try {
+            File dir = new File("jasmin");
+            if (!dir.exists())
+                dir.mkdirs();
+
+            File file = new File("jasmin/" + this.moduleName.substring(9) + ".j");
+            if (!file.exists())
+                file.createNewFile();
+
+
+            List<String> lines = Files.readAllLines(file.toPath());
+            
+            for(int i = 0; i < lines.size(); i++){
+
+                if(lines.get(i).equals("stack_"+functionName)){
+                    lines.set(i, "  .limit stack " + stackNr);
+                }
+
+            }
+
+            Files.write(file.toPath(), lines);
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+       
     }
 
     public String functionHeader(String functionName){
@@ -896,7 +945,7 @@ public class Proj {
                         file.println("  iload " + indexRegister);
                         file.println("  bipush " + value);
                         file.println("  iastore");
-                        file.println("  iinc " + indexRegister);
+                        file.println("  iinc " + indexRegister +" 1");
                         file.println("  goto loop"+ loop_nr);
                         file.println("loop"+ loop_nr+ "_end:");
 
@@ -907,6 +956,57 @@ public class Proj {
                         
                             
                         return true;
+                    }
+                    else{
+
+                        Symbol globalVariable = symbolTables.get(this.moduleName).getFromAll(name);
+
+                        if(globalVariable != null){
+                            String globalVariableType = globalVariable.getType() == "array" ? " [I" : " I";
+
+                    
+                            int indexRegister = functionTable.getLastRegister();
+                            //int arrayRegister = functionTable.getFromAll(name).getRegister();
+    
+                            functionTable.incLoopCounter();
+                            int loop_nr = functionTable.getLoopCounter();
+    
+                            file.println("  iconst_0");
+                            file.println("  istore " + indexRegister);
+                            file.println("loop"+loop_nr+":");
+                            file.println("  iload " + indexRegister);
+    
+                            //file.println("  aload " + arrayRegister);
+                            file.println("  getstatic " + this.moduleName.substring(9) + "/" + globalVariable.getName() + globalVariableType);
+    
+                            file.println("  arraylength");
+                            file.println("  if_icmpge loop" + loop_nr+"_end");
+                            
+                            //file.println("  aload " + arrayRegister);
+                            file.println("  getstatic " + this.moduleName.substring(9) + "/" + globalVariable.getName() + globalVariableType);
+                            
+                            file.println("  iload " + indexRegister);
+                            file.println("  bipush " + value);
+                            
+                            //file.println("  iastore");
+                            file.println("  putstatic " + this.moduleName.substring(9) + "/" + globalVariable.getName() + globalVariableType);
+
+                            file.println("  iinc " + indexRegister + " 1");
+                            file.println("  goto loop"+ loop_nr);
+                            file.println("loop"+ loop_nr+ "_end:");
+    
+                            indexRegister ++;
+                            functionTable.setLastRegister(indexRegister);
+    
+                            functionTable.setMaxStack(3);
+                            
+                                
+                            return true;
+
+                        }
+
+                       
+
                     }
 
                 }
@@ -1124,7 +1224,7 @@ public class Proj {
 
             for(int i = 0; i < argumentList.jjtGetNumChildren(); i++){
                 ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
-                functionTable.setMaxStack(argumentList.jjtGetNumChildren());
+                functionTable.setMaxStack(argumentList.jjtGetNumChildren() + 1);
                 printVariableLoad(file,functionTable,argument.name, argument.type);
             }
         } else if(call.jjtGetNumChildren() == 0 && call.function.equals("main")){
