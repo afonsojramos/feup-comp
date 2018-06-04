@@ -3,5 +3,11 @@
 cd Project
 
 jjtree proj.jjt
+
+cd AST
+
 javacc proj.jj
-javac *.java
+
+cd ..
+
+javac Proj.java

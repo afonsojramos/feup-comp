@@ -1,20 +1,44 @@
 options{
     LOOKAHEAD = 1;
-    DEBUG_PARSER = false;
     MULTI = true;
+    NODE_SCOPE_HOOK = true;
     ERROR_REPORTING = true;
+    JJTREE_OUTPUT_DIRECTORY = "AST";
 }
 
 
 PARSER_BEGIN(yal2jvm)
 
-//package AST;
+package AST;
+
+import AST.SimpleNode;
 
 public class yal2jvm {
     public static String errorIn = "";
     
     public yal2jvm(){
     }
+
+    private static void jjtreeOpenNodeScope(Node n)
+	{
+	  ((SimpleNode)n).setLineNumber(getToken(1).beginLine);
+	} 
+	
+	private static void jjtreeCloseNodeScope(Node n)
+	{
+	  //closeNodeHook();
+	}
+	void error_skipto(int kind)
+	{
+	  Token t;
+	  do
+	  {
+	    if (kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA) 
+	    break;
+	    t = getNextToken();
+	  }
+	  while (t.kind != kind);
+	}
 }
 
 PARSER_END(yal2jvm)
