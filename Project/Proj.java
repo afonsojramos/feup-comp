@@ -172,12 +172,8 @@ public class Proj {
                     for (int j = 0; j < function.jjtGetNumChildren(); j++) {
 
                         //Variables
-                        if (function.jjtGetChild(j) instanceof ASTAssign || function.jjtGetChild(j) instanceof ASTWhile || function.jjtGetChild(j) instanceof ASTIf || function.jjtGetChild(j) instanceof ASTElse)
+                        if (function.jjtGetChild(j) instanceof ASTAssign || function.jjtGetChild(j) instanceof ASTWhile || function.jjtGetChild(j) instanceof ASTIf || function.jjtGetChild(j) instanceof ASTElse || function.jjtGetChild(j) instanceof ASTCall)
                             saveFunctionVariables(functionSymbolTable, function.jjtGetChild(j));
-
-                        //Additional Semantic Analysis
-                        if (function.jjtGetChild(j) instanceof ASTCall)
-                            argumentsAnalysis(functionSymbolTable, function.jjtGetChild(j));
                     }
 
                     if(functionSymbolTable.getReturnSymbol()!= null){
@@ -203,7 +199,7 @@ public class Proj {
         printSymbolTables();
     }
 
-    public void saveFunctionVariables(SymbolTable functionSymbolTable, Node node) {
+    public SymbolTable saveFunctionVariables(SymbolTable functionSymbolTable, Node node) {
 
         if (node instanceof ASTAssign) {
             ASTAssign assign = (ASTAssign) node;
@@ -215,6 +211,10 @@ public class Proj {
                 if (assign.jjtGetChild(i) instanceof ASTAccess) {
                     ASTAccess access = (ASTAccess) assign.jjtGetChild(i);
                     name = access.name;
+
+                    if (functionSymbolTable.getReturnSymbol() != null && functionSymbolTable.getReturnSymbol().getName().equals(name)){
+                        functionSymbolTable.getReturnSymbol().setInit();
+                    }
 
                     for (int j = 0; j < access.jjtGetNumChildren(); j++) { //In Array Accesses an int must be inside the brackets
                         if (access.jjtGetChild(j) instanceof ASTArrayAccess) {
@@ -446,6 +446,11 @@ public class Proj {
             }
         }
 
+        else if (node instanceof ASTCall){
+            ASTCall call = (ASTCall) node;
+            argumentsAnalysis(functionSymbolTable, call);
+        }
+
         else if (node instanceof ASTWhile || node instanceof ASTIf || node instanceof ASTElse) {
             SimpleNode simpleNode = (SimpleNode) node;
 
@@ -453,6 +458,8 @@ public class Proj {
                 saveFunctionVariables(functionSymbolTable, simpleNode.jjtGetChild(i));
             }
         }
+
+        return functionSymbolTable;
 
     }
 

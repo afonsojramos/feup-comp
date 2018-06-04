@@ -26,7 +26,9 @@ public class SymbolTable {
     }
 
     public Symbol getReturnSymbol() {
-        return this.returnSymbol;
+        if (this.returnSymbol != null)
+            return this.returnSymbol;
+        return null;
     }
 
     public Boolean getReturned() {
@@ -47,7 +49,7 @@ public class SymbolTable {
         if (this.parameters.containsKey(name)) {
             return false;
         } else {
-            Symbol s = new Symbol(name, type);
+            Symbol s = new Symbol(name, type, true);
             this.parameters.put(name, s);
             return true;
         }
@@ -59,7 +61,7 @@ public class SymbolTable {
         if (this.variables.containsKey(name)) {
             return false;
         } else {
-            Symbol s = new Symbol(name, type);
+            Symbol s = new Symbol(name, type, true);
             this.variables.put(name, s);
             return true;
         }
@@ -79,7 +81,7 @@ public class SymbolTable {
 
     public Symbol getFromAll(String name) {
 
-        if (this.returnSymbol != null && name.equals(this.returnSymbol.getName()))
+        if (this.returnSymbol != null && name.equals(this.returnSymbol.getName()) && this.returnSymbol.getInit())
             return this.returnSymbol;
         else if (this.variables.get(name) != null)
             return this.variables.get(name);

@@ -143,9 +143,9 @@ module semantictest {
         if(m==1) {
             o=3;
         } else {
-            p=2;                                        // err42 not previously defined
+            p=2;                               
         }
-        o = p;                                          // err43 undefined because of error in if
+        o = p;                                          // err42 undefined because of error in if
 
         if(m==1){
             j=0;
