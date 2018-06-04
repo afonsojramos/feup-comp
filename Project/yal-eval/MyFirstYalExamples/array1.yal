@@ -3,30 +3,30 @@ module array1
 {
 
 
-	function print_array(N) {
+  function print_array(N)
+  {
 
-		a=[N];
-		i=0;
-		while(i < N){
-			j=0;
-			while(j<6){
+   a=[N];
 
-			}
-			a[i] = i;
-			i=i+1;
-		}
 
-		i=0;
-		while(i < N) {
-			ai=a[i];
-			io.print("a: ",ai);
-			i=i+1;
-		}
+   i=0;
+   while(i < N)
+   {
+   	a[i] = i;
+	i=i+1;
 	}
 
-	function main(){
-		print_array(10); // the same as array1.print_array(10);
-		c=3;
+	i=0;
+	while(i < N) {
+		ai=a[i];
+		io.print("a: ",ai);
+		i=i+1;
+	}
+	}
+
+	function main()
+	{
+	 print_array(10); // the same as array1.print_array(10);
 	}
 
 }

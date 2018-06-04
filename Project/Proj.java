@@ -672,8 +672,8 @@ public class Proj {
     public void initDeclarationsArrays(PrintWriter file, HashMap<String,String> staticArrays){
 
         file.println("\n.method static public <clinit>()V");
+        file.println("  .limit locals " + staticArrays.size() + "\n");        
         file.println("  .limit stack " + staticArrays.size());
-        file.println("  .limit locals " + staticArrays.size() + "\n");
 
         for (Map.Entry<String, String> entry : staticArrays.entrySet()) {
 
@@ -728,8 +728,8 @@ public class Proj {
         if(function.name.equals("main")) nrLocals++;
         int nrStack = 6;
 
+        file.println("  .limit locals " + nrLocals);       
         file.println("  .limit stack " + nrStack);
-        file.println("  .limit locals " + nrLocals);
 
 
         //function statements
@@ -756,7 +756,7 @@ public class Proj {
         } else { //void
             file.println("  return");
         }
-        //file.println("STACK: " + functionTable.getStack());
+        file.println("STACK: " + functionTable.getStack());
         file.println(".end method\n");
 
     }
@@ -1015,7 +1015,7 @@ public class Proj {
                     break;
             }
 
-            functionTable.setMaxStack(3);            
+            functionTable.setMaxStack(2);            
         
         }
     }
@@ -1271,6 +1271,9 @@ public class Proj {
             default:
                 break;   
         }
+
+        functionTable.setMaxStack(2);
+        
 
     }
 

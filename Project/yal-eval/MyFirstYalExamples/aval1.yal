@@ -9,15 +9,4 @@ module aval1 {
      a = b*c;
    }
 
-   function test(){
-     a=[20];
-     a=2;
-
-     b=[40];
-     b=6;
-
-
-     a=b;
-   }
-
 }
