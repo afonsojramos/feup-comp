@@ -683,8 +683,8 @@ public class Proj {
     public void initDeclarationsArrays(PrintWriter file, HashMap<String,String> staticArrays){
 
         file.println("\n.method static public <clinit>()V");
-        file.println("  .limit locals " + 0 + "\n");        
-        file.println("  .limit stack " + 3);
+        file.println("  .limit locals " + staticArrays.size());        
+        file.println("  .limit stack " + staticArrays.size());
 
         for (Map.Entry<String, String> entry : staticArrays.entrySet()) {
 
@@ -735,11 +735,11 @@ public class Proj {
         int nrVariables = (new ArrayList(functionTable.getVariables().keySet())).size();
         int nrReturn = functionTable.getReturnSymbol() != null ? 1 : 0;
 
-        int nrLocals = nrParameters + nrVariables + nrReturn;
+        /*int nrLocals = nrParameters + nrVariables + nrReturn;
         if(function.name.equals("main")) nrLocals++;
-        int nrStack = 6;
+        int nrStack = 6;*/
 
-        file.println("  .limit locals " + nrLocals);       
+        file.println("locals_" + function.name);       
         file.println("stack_" + function.name);
 
 
@@ -774,6 +774,8 @@ public class Proj {
 
     public void writeStackNumber(SymbolTable functionTable, String functionName){
         int stackNr = functionTable.getStack();
+        int localsNr = functionTable.getLocals();
+        
 
 
         try {
@@ -792,6 +794,10 @@ public class Proj {
 
                 if(lines.get(i).equals("stack_"+functionName)){
                     lines.set(i, "  .limit stack " + stackNr);
+                }
+
+                if(lines.get(i).equals("locals_"+functionName)){
+                    lines.set(i, "  .limit locals " + localsNr);
                 }
 
             }
@@ -944,7 +950,7 @@ public class Proj {
 
                         indexRegister ++;
                         functionTable.setLastRegister(indexRegister);
-
+                        functionTable.setLocals(indexRegister);
                         functionTable.setMaxStack(3);
                         
                             
@@ -990,7 +996,7 @@ public class Proj {
     
                             indexRegister ++;
                             functionTable.setLastRegister(indexRegister);
-    
+                            functionTable.setLocals(indexRegister);                            
                             functionTable.setMaxStack(3);
                             
                                 
@@ -1121,10 +1127,17 @@ public class Proj {
     public void arraySizeToJvm(PrintWriter file, SymbolTable functionTable, Node node){
         ASTArraySize arraysize = (ASTArraySize) node;
 
-        if(!arraysize.value.equals("")){ //Size is an integer
-            printVariableLoad(file, functionTable, arraysize.value, "Integer");
-        } else { //Size is a variable
-            printVariableLoad(file, functionTable, arraysize.name, "ID");
+        if(arraysize.jjtGetNumChildren()==1){
+            if(arraysize.jjtGetChild(0) instanceof ASTSizeAccess){
+                printVariableLoad(file, functionTable, arraysize.name, "ID"); //reference
+                file.println("  arraylength");
+            }
+        } else{
+            if(!arraysize.value.equals("")){ //Size is an integer
+                printVariableLoad(file, functionTable, arraysize.value, "Integer");
+            } else { //Size is a variable
+                printVariableLoad(file, functionTable, arraysize.name, "ID");
+            }
         }
 
         file.println("  newarray int");
@@ -1220,11 +1233,11 @@ public class Proj {
                 functionTable.setMaxStack(argumentList.jjtGetNumChildren() + 1);
                 printVariableLoad(file,functionTable,argument.name, argument.type);
             }
-        } else if(call.jjtGetNumChildren() == 0 && call.function.equals("main")){
+        } 
+        if(call.jjtGetNumChildren() == 0 && call.function.equals("main")){
             file.println("  aconst_null");
-        }
-
-        if (call.module.equals("") && symbolTables.get(call.function)!=null) { //function belongs to this module
+            file.println("  invokestatic " + this.moduleName.substring(9) + "/main([Ljava/lang/String;)V");
+        } else if (call.module.equals("") && symbolTables.get(call.function)!=null) { //function belongs to this module
             file.println("  invokestatic " + this.moduleName.substring(9) + "/" + functionHeaderInvoke(call.function, argumentList, returnMode));
         } else {
             file.println("  invokestatic " + call.module +"/" + functionHeaderInvoke(call.function, argumentList, returnMode));
@@ -1370,7 +1383,7 @@ public class Proj {
                 file.println("  if_icmpgt loop" + loop + "_end" );
                 break;
             case ">=":
-                file.println("  if_icmplit loop" + loop + "_end" );
+                file.println("  if_icmplt loop" + loop + "_end" );
                 break;
             case "==":
                 file.println("  if_icmpne loop" + loop + "_end" );

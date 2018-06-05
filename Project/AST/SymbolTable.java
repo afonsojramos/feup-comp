@@ -10,6 +10,7 @@ public class SymbolTable implements Cloneable {
     private boolean returned = false;
     private int lastRegister;
     private int stack = 1;
+    private int locals = 0;
     private int loopCounter = -1;
 
     public SymbolTable() {
@@ -145,6 +146,8 @@ public class SymbolTable implements Cloneable {
         }
 
         this.lastRegister=registerCounter;
+
+        this.locals = registerCounter;
            
     }
 
@@ -161,7 +164,16 @@ public class SymbolTable implements Cloneable {
     }
 
     public void setMaxStack(int stack){
-        this.stack = Math.max(this.stack, stack);
+        int stack_1 =  Math.max(1, stack);
+        this.stack = Math.max(this.stack, stack_1);
+    }
+
+    public int getLocals() {
+        return locals;
+    }
+
+    public void setLocals(int locals) {
+        this.locals = locals;
     }
 
     public int getLoopCounter() {
