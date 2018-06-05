@@ -253,7 +253,7 @@ public class Proj {
                     ASTRhs rhs = (ASTRhs) assign.jjtGetChild(i);
 
                     for (int j = 0; j < rhs.jjtGetNumChildren(); j++) {
-                        if (rhs.jjtGetChild(j) instanceof ASTArraySize) { 
+                        if (rhs.jjtGetChild(j) instanceof ASTArraySize) {
                             ASTArraySize arraySize = (ASTArraySize) rhs.jjtGetChild(j);
 
                             if (functionSymbolTable.getReturnSymbol() != null && functionSymbolTable.getReturnSymbol().getName().equals(name) && functionSymbolTable.getReturnSymbol().getType().equals("array")){
@@ -264,7 +264,7 @@ public class Proj {
                                 printSemanticError(arraySize.name, arraySize.line, "Undefined variable.");
                            
                             if (functionSymbolTable.getAcessType(name) == "int" || this.symbolTables.get(this.moduleName).getAcessType(name) == "int") //Variable previously defined as integer
-                                printSemanticError(arraySize.name, arraySize.line, "Variable previously defined as another type.");
+                                printSemanticError(name, arraySize.line, "Variable previously defined as another type.");
 
                             type = "array";
 
@@ -358,7 +358,14 @@ public class Proj {
                                                 if (functionSymbolTable.getAcessType(access.name) == "int" || this.symbolTables.get(this.moduleName).getAcessType(access.name) == "int") //Variable previously defined as integer
                                                     printSemanticError(access.name, access.line, "This variable is a scalar, not an array.");
                                             }
-                                        }                                        
+                                        }       
+                                        
+                                        //TODO: Just if not working
+                                        if (functionSymbolTable.getFromAll(access.name) != null && functionSymbolTable.getVariables() != null && functionSymbolTable.getVariables().get(access.name) != null)
+                                            System.out.println(access.name + " " + functionSymbolTable.getVariables().get(access.name).getInit() + assign.jjtGetParent());
+
+                                        if (functionSymbolTable.getFromAll(access.name) != null && !functionSymbolTable.getFromAll(access.name).getInit())
+                                            printSemanticError(access.name, access.line, "Variable may not be defined.");
                                     } 
                                 } 
                             }
@@ -377,11 +384,9 @@ public class Proj {
                 if (assign.jjtGetParent() instanceof ASTIf){
                     functionSymbolTable.addVariable(name, type);
                     functionSymbolTable.getFromAll(name).setNotInit();
+                    System.out.println("Adding this dude: " + name + functionSymbolTable.getFromAll(name).getInit());
                 }
                 else if (assign.jjtGetParent() instanceof ASTElse){
-                    if (functionSymbolTable.getFromAll(name) != null && functionSymbolTable.getFromAll(name).getType() != type){
-                        printSemanticError(name, assign.line, "Type of Variable different from IF container.");
-                    }
                     if (functionSymbolTable.getFromAll(name) != null && functionSymbolTable.getFromAll(name).getType() == type){
                         functionSymbolTable.getFromAll(name).setInit();
                     }
