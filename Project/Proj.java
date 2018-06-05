@@ -384,7 +384,6 @@ public class Proj {
                 if (assign.jjtGetParent() instanceof ASTIf){
                     functionSymbolTable.addVariable(name, type);
                     functionSymbolTable.getFromAll(name).setNotInit();
-                    System.out.println("Adding this dude: " + name + functionSymbolTable.getFromAll(name).getInit());
                 }
                 else if (assign.jjtGetParent() instanceof ASTElse){
                     if (functionSymbolTable.getFromAll(name) != null && functionSymbolTable.getFromAll(name).getType() == type){
@@ -471,7 +470,7 @@ public class Proj {
         for (Map.Entry<String, Symbol> entry : ifVariables.entrySet()) {
             if ((parent.getFromAll(entry.getKey())) == null) {
                 parent.addVariable(entry.getKey(), entry.getValue().getType());
-                //entry.getValue().setInit(); Just MAY BE
+                parent.getFromAll(entry.getKey()).setNotInit();
             }
         }
     }
