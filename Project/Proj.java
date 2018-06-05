@@ -20,7 +20,6 @@ public class Proj {
     public static String fileName = "";
 
     private HashMap<String, SymbolTable> symbolTables = new HashMap<String, SymbolTable>();
-    private HashMap<String, Symbol> ifVarlist = new HashMap<String, Symbol>();
     private String moduleName;
     private int errorCount = 0;
 
@@ -355,11 +354,7 @@ public class Proj {
 
                                                 deepAccess = true;
                                             }
-                                        }
-                                        //TDOO: quando array = array dá erro e não devia
-                                        /* if ((functionSymbolTable.getAcessType(access.name) != type && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type) && !deepAccess)
-                                            printSemanticError(access.name, access.line,"This variable is an array, operations can only be done with scalars.");  */          
-                                        
+                                        }                                        
                                     } 
                                 } 
                             }
@@ -373,32 +368,6 @@ public class Proj {
                 if(!type.equals(functionSymbolTable.getReturnSymbol().getType()) && functionSymbolTable.getReturnSymbol().getType() == "int")
                     printSemanticError(name, assign.line,"Return type mismatch.");                    
             } 
-
-            /* if (canAddVariable(functionSymbolTable, name, type)) {
-                if (assign.parent instanceof ASTWhile || assign.parent instanceof ASTIf){
-                    ifVarlist.put(name, new Symbol(name, type));
-                }
-                else if (assign.parent instanceof ASTElse){
-                    if (ifVarlist.get(name) != null && ifVarlist.get(name).getType() != type){
-                        printSemanticError(name, assign.line, "WRONG TYPE");
-                    }
-                    else if (ifVarlist.get(name) != null){
-                        functionSymbolTable.addVariable(name, type);
-                    }
-                    else {
-                        printSemanticError(name, assign.line, "Variable has to be in if and else");
-                    }
-                }                
-                else {
-                    Iterator it = ifVarlist.entrySet().iterator();
-                    while (it.hasNext()) {
-                        it.next();
-                        it.remove(); // avoids a ConcurrentModificationException
-                    }
-                    functionSymbolTable.addVariable(name, type);
-                }
-
-            } */
 
             if (canAddVariable(functionSymbolTable, name, type)) {
                 if (assign.jjtGetParent() instanceof ASTIf){
@@ -466,12 +435,28 @@ public class Proj {
             SimpleNode simpleNode = (SimpleNode) node;
 
             for (int i = 0; i < simpleNode.jjtGetNumChildren(); i++) {
-                saveFunctionVariables(functionSymbolTable, simpleNode.jjtGetChild(i));
+                try {
+                    SymbolTable nestedTable = functionSymbolTable.clone();
+                    saveFunctionVariables(nestedTable, simpleNode.jjtGetChild(i));
+                    mergeIf(nestedTable, functionSymbolTable);
+                } catch (CloneNotSupportedException e) {
+                    System.out.println("Clone not supported!");
+                }
             }
         }
 
         return functionSymbolTable;
 
+    }
+
+    public void mergeIf(SymbolTable ifTable, SymbolTable parent) {
+        LinkedHashMap<String, Symbol> ifVariables = ifTable.getVariables();
+        for (Map.Entry<String, Symbol> entry : ifVariables.entrySet()) {
+            if ((parent.getFromAll(entry.getKey())) == null) {
+                parent.addVariable(entry.getKey(), entry.getValue().getType());
+                //entry.getValue().setInit(); Just MAY BE
+            }
+        }
     }
 
     public void argumentsAnalysis(SymbolTable functionSymbolTable, Node node) {

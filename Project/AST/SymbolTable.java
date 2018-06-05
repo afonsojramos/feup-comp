@@ -3,7 +3,7 @@ package AST;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SymbolTable {
+public class SymbolTable implements Cloneable {
     private LinkedHashMap<String, Symbol> parameters;
     private LinkedHashMap<String, Symbol> variables;
     private Symbol returnSymbol = null;
@@ -170,5 +170,13 @@ public class SymbolTable {
 
     public void incLoopCounter() {
         this.loopCounter ++;
+    }
+
+    @SuppressWarnings("unchecked")
+	@Override
+    public SymbolTable clone() throws CloneNotSupportedException{
+        SymbolTable newTable = (SymbolTable)super.clone();
+        newTable.variables = (LinkedHashMap<String, Symbol>)this.variables.clone();
+        return newTable;
     }
 }

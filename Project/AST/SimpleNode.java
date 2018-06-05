@@ -95,11 +95,11 @@ public class SimpleNode implements Node {
   }
 
   public void setLineNumber(int beginLine) {
-	this.lineNumber = lineNumber;	
+	this.lineNumber = beginLine;	
   }
 	
   public int getLineNumber() {
-	return lineNumber;
+	return this.lineNumber;
   }
 }
 
