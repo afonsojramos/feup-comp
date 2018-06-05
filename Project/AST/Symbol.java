@@ -41,6 +41,10 @@ public class Symbol {
         this.init = true;
     }
 
+    public void setNotInit(){
+        this.init = false;
+    }
+
     public boolean equals(Object symbol) {
         Symbol s = (Symbol) symbol;
         return this.name.equals(s.getName());
