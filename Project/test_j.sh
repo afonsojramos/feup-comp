@@ -6,7 +6,6 @@ javacc proj.jj
 cd ..
 javac Proj.java
 
-
 java Proj yal-eval/MyFirstYalExamples/array1.yal color
 cd jasmin
 java -jar jasmin.jar array1.j
@@ -159,21 +158,18 @@ read -p " Press any key to continue..." -n1 -s
 java Proj yal-eval/ExtraYalExamples/input-as-output.yal color
 cd jasmin
 java -jar jasmin.jar inputAsOutput.j
-java inputAsOutput
 cd ..
 read -p " Press any key to continue..." -n1 -s
 
 java Proj yal-eval/ExtraYalExamples/nested-branch.yal color
 cd jasmin
 java -jar jasmin.jar nestedBranch.j
-java nestedBranch
 cd ..
 read -p " Press any key to continue..." -n1 -s
 
 java Proj yal-eval/ExtraYalExamples/register-test.yal color
 cd jasmin
 java -jar jasmin.jar registerTest.j
-java registerTest
 cd ..
 read -p " Press any key to continue..." -n1 -s
 
