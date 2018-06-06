@@ -1004,10 +1004,7 @@ public class Proj {
                             
                             file.println("  iload " + indexRegister);
                             file.println("  bipush " + value);
-                            
-                            //file.println("  iastore");
-                            file.println("  putstatic " + this.moduleName.substring(9) + "/" + globalVariable.getName() + globalVariableType);
-
+                            file.println("  iastore");
                             file.println("  iinc " + indexRegister + " 1");
                             file.println("  goto loop"+ loop_nr);
                             file.println("loop"+ loop_nr+ "_end:");
