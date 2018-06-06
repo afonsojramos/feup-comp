@@ -6,6 +6,14 @@ javacc proj.jj
 cd ..
 javac Proj.java
 
+#java Proj yal-eval/MyFirstYalExamples/test.yal color
+#cd jasmin
+#java -jar jasmin.jar test.j
+#java test
+#cd ..
+#read -p " Press any key to continue..." -n1 -s
+
+
 java Proj yal-eval/MyFirstYalExamples/array1.yal color
 cd jasmin
 java -jar jasmin.jar array1.j

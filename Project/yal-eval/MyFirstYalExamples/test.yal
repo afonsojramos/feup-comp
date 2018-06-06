@@ -1,0 +1,43 @@
+module test
+{
+	function n=f1(a,b,c,d)
+	{
+		n1=a+b;
+		n2=c+d;
+		n=n1+n2;
+	} 
+
+	function main() {
+
+		//a = f1(1,2,3,4);
+		//b = 1 + f1(1,2,3,4);
+		//c = f1(1,2,3,4) + 2;
+
+		//io.println("a: ", a);
+		//io.println("b: ", b);
+		//io.println("c: ", c);
+
+
+		d = [10];
+		d = 1;
+
+		b = d[1] + f1(1,2,3,4);
+		c = f1(1,2,3,4) + d[1];
+
+		io.println("b: ", b);
+		io.println("c: ", c);
+		
+		//e = [10];
+
+		//e[1] = d[1] + f1(1,2,3,4);
+		//e[2] = f1(1,2,3,4) + d[1];
+
+		//f=e[1];
+		//g=e[2];
+
+		//io.println("f: ", f);
+		//io.println("g: ", g);
+
+	}      
+        
+}
