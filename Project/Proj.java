@@ -66,7 +66,7 @@ public class Proj {
             root.dump("");
             buildSymbolTables(root);
             fillFunctionSymbolTables(root);
-            if(errorCount == 0) //if there weren't any semantic erros
+            //if(errorCount == 0) //if there weren't any semantic erros
                 yalToJasmin(root);
             System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_GREEN + " The input was read sucessfully." + ANSI_RESET);
         } catch (ParseException e) {
@@ -885,6 +885,8 @@ public class Proj {
                 arrayaccessToJvm(file,functionTable, access.jjtGetChild(0));
                 rhsToJvm(file, functionTable, assign.jjtGetChild(1));
                 file.println("  iastore");
+
+                functionTable.setMaxStack(4);
             }else if(rhs.jjtGetNumChildren() == 2){
                if(!isInc(file, functionTable, rhs, access.name)){
                 rhsToJvm(file, functionTable, assign.jjtGetChild(1));
