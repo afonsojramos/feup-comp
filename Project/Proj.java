@@ -684,7 +684,7 @@ public class Proj {
         else if (type.equals("array")) {
             file.println(".field static " + element.name + " [I");
 
-            if(declaration.jjtGetChild(1) instanceof ASTArraySize){
+            if(declaration.jjtGetNumChildren()>1 && declaration.jjtGetChild(1) instanceof ASTArraySize){
 
                 ASTArraySize arraysize = (ASTArraySize) declaration.jjtGetChild(1);
 

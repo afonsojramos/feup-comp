@@ -10,4 +10,17 @@ module nestedBranch {
 			}
 		}
 	}
+
+	function main() {
+		a1 = -10;
+		a3 = 10;
+		a2 = a1 + a3;
+		b1 = sign(a1);
+		b2 = sign(a2);
+		b3 = sign(a3);
+
+		io.println(b1);
+		io.println(b2);
+		io.println(b3);
+	}
 }

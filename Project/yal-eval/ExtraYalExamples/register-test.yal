@@ -3,8 +3,12 @@
 module registerTest {
 	function y = f(a) {
 		b = a + 1;
-		c = b + 1;
-		d = c + 1;
+		c = b + 2;
+		d = c + 3;
 		y = d + 1;
+	}
+	function main() {
+		y = f(1);
+		io.println(y); // 8
 	}
 }

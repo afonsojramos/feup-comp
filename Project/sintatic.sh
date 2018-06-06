@@ -12,7 +12,6 @@ read -p " Press any key to continue..." -n1 -s
 java Proj testsuite/sintatic/array4_err.yal color
 read -p " Press any key to continue..." -n1 -s
 
-
 java Proj testsuite/sintatic/aval1_err.yal color
 read -p " Press any key to continue..." -n1 -s
 

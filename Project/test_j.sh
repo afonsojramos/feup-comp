@@ -156,6 +156,22 @@ java sqrt
 cd ..
 read -p " Press any key to continue..." -n1 -s
 
+
+java Proj yal-eval/ExtraYalExamples/array-init.yal color
+cd jasmin
+java -jar jasmin.jar arrayInit.j
+cd ..
+read -p " Press any key to continue..." -n1 -s
+
+
+java Proj yal-eval/ExtraYalExamples/constant-ranges.yal color
+cd jasmin
+java -jar jasmin.jar constantRanges.j
+java constantRanges
+cd ..
+read -p " Press any key to continue..." -n1 -s
+
+
 java Proj yal-eval/ExtraYalExamples/call-main.yal color
 cd jasmin
 java -jar jasmin.jar callMain.j
@@ -163,21 +179,43 @@ java callMain
 cd ..
 read -p " Press any key to continue..." -n1 -s
 
+
 java Proj yal-eval/ExtraYalExamples/input-as-output.yal color
 cd jasmin
 java -jar jasmin.jar inputAsOutput.j
+java inputAsOutput
 cd ..
 read -p " Press any key to continue..." -n1 -s
+
 
 java Proj yal-eval/ExtraYalExamples/nested-branch.yal color
 cd jasmin
 java -jar jasmin.jar nestedBranch.j
+java nestedBranch
 cd ..
 read -p " Press any key to continue..." -n1 -s
+
+
+java Proj yal-eval/ExtraYalExamples/quicksort.yal color
+cd jasmin
+java -jar jasmin.jar quicksort.j
+java quicksort
+cd ..
+read -p " Press any key to continue..." -n1 -s
+
 
 java Proj yal-eval/ExtraYalExamples/register-test.yal color
 cd jasmin
 java -jar jasmin.jar registerTest.j
+java registerTest
+cd ..
+read -p " Press any key to continue..." -n1 -s
+
+
+java Proj yal-eval/ExtraYalExamples/stack-size.yal color
+cd jasmin
+java -jar jasmin.jar stackSize.j
+java stackSize
 cd ..
 read -p " Press any key to continue..." -n1 -s
 
