@@ -340,10 +340,6 @@ public class Proj {
                                                 for (int m = 0; m < arrayAccess.jjtGetNumChildren(); m++) {
                                                     if (arrayAccess.jjtGetChild(m) instanceof ASTIndex) {
                                                         ASTIndex index = (ASTIndex) arrayAccess.jjtGetChild(m);
-
-                                                        if (functionSymbolTable.getFromAll(access.name) != null && !functionSymbolTable.getFromAll(access.name).getInit()){
-                                                            printSemanticError(access.name, index.line, "Empty Array.");
-                                                        }
                                                                                     
                                                         if (index.value.isEmpty()){ //Case of VARIABLE has "name" but does not have "value"
                                                             if (functionSymbolTable.getFromAll(index.name) == null && this.symbolTables.get(moduleName).getFromAll(index.name) == null)
@@ -365,7 +361,7 @@ public class Proj {
                                         if (functionSymbolTable.getFromAll(access.name) != null && functionSymbolTable.getVariables() != null && functionSymbolTable.getVariables().get(access.name) != null)
                                             System.out.println(access.name + " " + functionSymbolTable.getVariables().get(access.name).getInit() + assign.jjtGetParent());
 
-                                        if (functionSymbolTable.getFromAll(access.name) != null && !functionSymbolTable.getFromAll(access.name).getInit())
+                                        if (functionSymbolTable.getFromAll(access.name) != null && functionSymbolTable.getVariables() != null && functionSymbolTable.getVariables().get(access.name) != null && !functionSymbolTable.getVariables().get(access.name).getInit() && functionSymbolTable.getVariables().get(access.name).getType() != "array")
                                             printSemanticError(access.name, access.line, "Variable may not be defined.");
                                     } 
                                 } 
