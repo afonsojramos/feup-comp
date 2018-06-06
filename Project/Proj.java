@@ -870,7 +870,7 @@ public class Proj {
         if (node instanceof ASTAssign) { 
             assignToJvm(file, functionTable, node);
         }else if (node instanceof ASTCall){
-            callToJvm(file, functionTable, node, "void");
+            callToJvm(file, functionTable, node, "void", 0);
         }else if (node instanceof ASTWhile){
             whileToJvm(file, functionTable, node);
         }else if (node instanceof ASTIf){
@@ -890,13 +890,12 @@ public class Proj {
             if(access.jjtGetNumChildren() == 1 && access.jjtGetChild(0) instanceof ASTArrayAccess){ //arrayaccess special case         
                 printVariableLoad(file, functionTable, access.name, "ID"); //reference
                 arrayaccessToJvm(file,functionTable, access.jjtGetChild(0));
-                rhsToJvm(file, functionTable, assign.jjtGetChild(1));
+                rhsToJvm(file, functionTable, assign.jjtGetChild(1), false);
                 file.println("  iastore");
-
-                functionTable.setMaxStack(4);
+                functionTable.setMaxStack(functionTable.getStack()+2);
             }else if(rhs.jjtGetNumChildren() == 2){
                if(!isInc(file, functionTable, rhs, access.name)){
-                rhsToJvm(file, functionTable, assign.jjtGetChild(1));
+                rhsToJvm(file, functionTable, assign.jjtGetChild(1), false);
                 accessToJvm(file, functionTable, assign.jjtGetChild(0), "Store");
                }  
             }
@@ -906,7 +905,7 @@ public class Proj {
             }else if(externalFunctionArray(file, functionTable, rhs, access)){ //external call returns array special case
             
             }else{
-                rhsToJvm(file, functionTable, assign.jjtGetChild(1));
+                rhsToJvm(file, functionTable, assign.jjtGetChild(1), false);
                 accessToJvm(file, functionTable, assign.jjtGetChild(0), "Store");
             }
         }
@@ -924,7 +923,7 @@ public class Proj {
                 if (functionTable != null && functionTable.getFromAll(name) != null) { 
                     Symbol variable = functionTable.getFromAll(name);
                     if(variable.getType().equals("array")){ 
-                        callToJvm(file, functionTable, call, "array");
+                        callToJvm(file, functionTable, call, "array",0);
                         accessToJvm(file, functionTable, access, "Store");
                         return true;
                     }
@@ -1085,12 +1084,16 @@ public class Proj {
 
    
 
-    public void rhsToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+    public void rhsToJvm(PrintWriter file, SymbolTable functionTable, Node node, boolean isETChild){
         ASTRhs rhs = (ASTRhs) node;
 
         if(rhs.jjtGetNumChildren() == 1){
             if (rhs.jjtGetChild(0) instanceof ASTTerm) {
-                termToJvm(file, functionTable, rhs.jjtGetChild(0));
+                if(isETChild)
+                    termToJvm(file, functionTable, rhs.jjtGetChild(0), 1);
+                else
+                    termToJvm(file, functionTable, rhs.jjtGetChild(0), 0);
+                    
             }
             else if(rhs.jjtGetChild(0) instanceof ASTArraySize){
                 arraySizeToJvm(file, functionTable, rhs.jjtGetChild(0));
@@ -1100,8 +1103,8 @@ public class Proj {
             ASTTerm term1 = (ASTTerm) rhs.jjtGetChild(0);
             ASTTerm term2 = (ASTTerm) rhs.jjtGetChild(1);
             
-            termToJvm(file, functionTable, term1);
-            termToJvm(file, functionTable, term2);
+            termToJvm(file, functionTable, term1, 0);
+            termToJvm(file, functionTable, term2, 1);
             
             switch (rhs.operator) {
                 case "+":
@@ -1164,9 +1167,10 @@ public class Proj {
 
     
 
-    public void termToJvm(PrintWriter file, SymbolTable functionTable, Node node){
+    public void termToJvm(PrintWriter file, SymbolTable functionTable, Node node, int childNr){
 
         ASTTerm term = (ASTTerm) node;
+
 
         if (term.jjtGetNumChildren() == 0){
             if(term.integer != "") { //simple integer
@@ -1182,8 +1186,21 @@ public class Proj {
         } else if(term.jjtGetNumChildren() == 1){
             if (term.jjtGetChild(0) instanceof ASTAccess) {
                 accessToJvm(file, functionTable, term.jjtGetChild(0), "Load");
-            } else if(term.jjtGetChild(0) instanceof ASTCall){
-                callToJvm(file, functionTable, term.jjtGetChild(0), "int");
+                
+                if(term.jjtGetChild(0).jjtGetNumChildren() == 1){
+                    if(term.jjtGetChild(0).jjtGetChild(0) instanceof ASTArrayAccess){
+                        functionTable.setMaxStack(3);
+                    }
+                }
+
+            } else if(term.jjtGetChild(0) instanceof ASTCall){      
+
+                if(childNr == 1){
+                    callToJvm(file, functionTable, term.jjtGetChild(0), "int", 1);
+                }
+                else{
+                    callToJvm(file, functionTable, term.jjtGetChild(0), "int", 0);                    
+                }
             }
         }
 
@@ -1238,7 +1255,7 @@ public class Proj {
         }
     }
 
-    public void callToJvm(PrintWriter file, SymbolTable functionTable, Node node, String returnMode){
+    public void callToJvm(PrintWriter file, SymbolTable functionTable, Node node, String returnMode, int childNr){
 
         ASTCall call = (ASTCall) node;
         ASTArgumentList argumentList = null;
@@ -1249,8 +1266,14 @@ public class Proj {
 
             for(int i = 0; i < argumentList.jjtGetNumChildren(); i++){
                 ASTArgument argument = (ASTArgument) argumentList.jjtGetChild(i);
-                functionTable.setMaxStack(argumentList.jjtGetNumChildren() + 1);
                 printVariableLoad(file,functionTable,argument.name, argument.type);
+                if(childNr==1){
+                    functionTable.setMaxStack(argumentList.jjtGetNumChildren()+1);
+                }
+                else{
+                    functionTable.setMaxStack(argumentList.jjtGetNumChildren());                    
+                }
+                
             }
         } 
         if(call.jjtGetNumChildren() == 0 && call.function.equals("main")){
@@ -1386,7 +1409,7 @@ public class Proj {
 
         if (exprtest.jjtGetChild(0) instanceof ASTAccess && exprtest.jjtGetChild(1) instanceof ASTRhs){
             accessToJvm(file, functionTable, exprtest.jjtGetChild(0), "Load");            
-            rhsToJvm(file, functionTable, exprtest.jjtGetChild(1));
+            rhsToJvm(file, functionTable, exprtest.jjtGetChild(1),true);
         }
 
 
