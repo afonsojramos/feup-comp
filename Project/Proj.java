@@ -329,13 +329,15 @@ public class Proj {
 
                                     if (term.jjtGetChild(k) instanceof ASTAccess) {
                                         ASTAccess access = (ASTAccess) term.jjtGetChild(k);
+                                        boolean deepAccess = false;
 
                                         if (functionSymbolTable.getFromAll(access.name) == null && this.symbolTables.get(moduleName).getFromAll(access.name) == null)
                                             printSemanticError(access.name, access.line, "Variable not previously defined.");
 
                                         for (int l = 0; l < access.jjtGetNumChildren(); l++) {
                                             if (access.jjtGetChild(l) instanceof ASTArrayAccess) {
-                                                ASTArrayAccess arrayAccess = (ASTArrayAccess) access.jjtGetChild(l);
+                                                ASTArrayAccess arrayAccess = (ASTArrayAccess) access.jjtGetChild(l); 
+                                                deepAccess = true;
                     
                                                 for (int m = 0; m < arrayAccess.jjtGetNumChildren(); m++) {
                                                     if (arrayAccess.jjtGetChild(m) instanceof ASTIndex) {
@@ -354,12 +356,13 @@ public class Proj {
 
                                                 if (functionSymbolTable.getAcessType(access.name) == "int" || this.symbolTables.get(this.moduleName).getAcessType(access.name) == "int") //Variable previously defined as integer
                                                     printSemanticError(access.name, access.line, "This variable is a scalar, not an array.");
+
+                                                deepAccess = true;
                                             }
-                                        }       
-                                        
-                                        //TODO: Just if not working
-                                        if (functionSymbolTable.getFromAll(access.name) != null && functionSymbolTable.getVariables() != null && functionSymbolTable.getVariables().get(access.name) != null)
-                                            System.out.println(access.name + " " + functionSymbolTable.getVariables().get(access.name).getInit() + assign.jjtGetParent());
+                                        }
+
+                                        if ((functionSymbolTable.getAcessType(access.name) != type && type == "int" && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type) && ((rhs.operator != "" && !deepAccess) || (rhs.operator != "" && rhs.jjtGetNumChildren() > 1)))
+                                            printSemanticError(access.name, access.line, "This variable is an array, operations can only be done with scalars."); 
 
                                         if (functionSymbolTable.getFromAll(access.name) != null && functionSymbolTable.getVariables() != null && functionSymbolTable.getVariables().get(access.name) != null && !functionSymbolTable.getVariables().get(access.name).getInit() && functionSymbolTable.getVariables().get(access.name).getType() != "array" && assign.jjtGetParent().toString() != "While" && assign.jjtGetParent().toString() != "If" && assign.jjtGetParent().toString() != "Else")
                                             printSemanticError(access.name, access.line, "Variable may not be defined.");
@@ -397,9 +400,6 @@ public class Proj {
                 }             
                 else {
                     functionSymbolTable.addVariable(name, type);
-                    if (type == "array"){
-                        functionSymbolTable.getVariables().get(name).setNotInit();
-                    }
                 }
 
             }
