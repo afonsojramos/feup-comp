@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.nio.file.Files;
 import AST.*;
+import Symbol.*;
 import java.nio.file.Paths;
 import java.util.List;
 

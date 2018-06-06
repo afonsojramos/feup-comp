@@ -1,4 +1,4 @@
-package AST;
+package Symbol;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

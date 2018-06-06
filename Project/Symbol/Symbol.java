@@ -1,4 +1,4 @@
-package AST;
+package Symbol;
 
 public class Symbol {
     private String name = null;
