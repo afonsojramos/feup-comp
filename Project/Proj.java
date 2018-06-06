@@ -470,6 +470,9 @@ public class Proj {
                 parent.getFromAll(entry.getKey()).setNotInit();
             }
         }
+
+        if (ifTable.getReturned())
+            parent.setReturned(true);
     }
 
     public void argumentsAnalysis(SymbolTable functionSymbolTable, Node node) {
