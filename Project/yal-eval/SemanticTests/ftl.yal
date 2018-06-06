@@ -83,50 +83,45 @@ module semantictest {
     function scal=moreerrors() {
 
         scal = 2;
-        newscal = scal.size + 5;                        // err23 .size on scalar
-        arr.size = 5;                                   // err24 .size on LHS
+        newscal = scal.size + 5;                        // err22 .size on scalar
+        arr.size = 5;                                   // err23 .size on LHS
 
         myscal = 2;
-        myscal = [20];                                  // err25 already a scalar
-        global = [myscal];                              // err26 already a (global) scalar
+        myscal = [20];                                  // err24 already a scalar
+        global = [myscal];                              // err25 already a (global) scalar
 
 
         newarr = [20];
         newarr = 5 + scalar(global, arr);
-        newarr = arr ^ myscal;                          // err27 array on operation
-        newarr = myscal & f();                          // err28 array on operation
+        newarr = arr ^ myscal;                          // err26 array on operation
+        newarr = myscal & f();                          // err27 array on operation
 
-        newarr = arr;                                   // TODO SHOULD NOT BE ERROR (Global defined as int???)
+        newarr = arr;
         myscal = arr[myscal] * arr[0];
 
-        newarr = [nope.size];                           // err29 undeclared variable
-        myscal = notdecl + arr[notdecl2];               // err30 err31 undeclared variables + TODO Extra Type mismatch (probably same error as 99)
-        myscal = scalar(global, arr) ^ undecl;          // err32 err33 undeclared variable + TODO Extra Type mismatch (probably same error as 99)
-        notarray[0] = global + myscal;                  // err34 undeclared array access on LHS
+        newarr = [nope.size];                           // err28 undeclared variable
+        myscal = notdecl + arr[notdecl2];               // err29 err30 undeclared variables
+        myscal = scalar(global, arr) ^ undecl;          // err31 undeclared variable
+        notarray[0] = global + myscal;                  // err32 undeclared array access on LHS
 
-        arr[undecl] = 5;                                // err35 undeclared index
+        arr[undecl] = 5;                                // err33 undeclared index
 
-        anotherarr = [N];                               // err36 undeclared variable used as size
+        anotherarr = [N];                               // err34 undeclared variable used as size
     }
 
-    function nope=noreturn() {                          // err37 return type not declared in locals / params / globals
+    function nope=noreturn() {                          // err35 return type not declared in locals / params / globals
 
         myscal = 5;
     }
 
     function nope[]=wrongtype() {                       
 
-        nope = 5;
+        nope = 5;                                       // err36 return array not initialized
     }
    
-    function a=globalmismatch() {                       // err38 return type mismatch with global array
+    function a=globalmismatch() {                       // err37 return type mismatch with global array
    
         a[0] = 5;
-    }
-
-    function scal=seemsgood(scal) {
-
-
     }
 
     function letsgoforifs() {
@@ -136,19 +131,140 @@ module semantictest {
         if(m==1) {                                     
 		    n=[20];
         } else {
-            n=2;                                        // err39 type mismatch
+            n=2;                                       
         }
-        o = n;                                          // err40 undefined err 41 type mismatch
+        o = n;                                         
 
         if(m==1) {
             o=3;
         } else {
             p=2;                               
         }
-        o = p;                                          // err42 undefined because of error in if
+        o = p;                                          // err38 undefined because of error in if
 
         if(m==1){
             j=0;
         }
+    }
+
+    function nope[]=work() {      
+        nope = 5;                                       // err39 return array not initialized
+        a = [20];
+        a = 5; 
+    }
+
+    function y = print(N)
+    {
+        c = y;                                          // err40 variable not defined
+        y = 0;
+        c = y;
+    }
+
+    function print_array(N)
+    {
+        if (N > 2) { 
+            y = 1; 
+            if (N > 2) { 
+                y = 1; 
+            } 
+            c = y;
+        } 
+        c = y;                                          // err41 return array not initialized
+    }
+
+    function uncallable(a) 
+    { 
+        if (a > 0) 
+        { 
+            g();                                        // err42 function not declared
+        } 
+
+        g();                                            // err43 function not declared
+    }
+
+    function x(a, b) 
+    { 
+        
+        if (a > b) 
+        { 
+            y = 1;
+            b = y;
+
+            if (a > 0){
+                x=y;
+            }else{
+                x=2;
+            }
+        } 
+        else
+        { 
+            z = g[2];                                   // err44 variable not defined
+        }
+    }
+
+    function gaga() 
+    { 
+        g = [2];
+        g = 2;
+        z = g[2]; 
+
+        l = [2];
+        z = l[2]; 
+    }
+
+    function ifif() 
+    { 
+        a = 2;
+        if (a > 0) 
+        { 
+            if (a > 0) 
+            { 
+                z = 2; 
+            }
+        } 
+        a = z;                                          // err45 variable may be not defined
+
+        if (a > 0) 
+        { 
+            if (a > 0) 
+            { 
+                p = 2; 
+            } 
+            else 
+            {
+                p = 5;
+            } 
+        } 
+        else 
+        {
+            p = 2;
+        }
+        a = p;
+
+        if (a > 0) 
+        { 
+            w = [2]; 
+        } 
+        a = w;                                           // err46 variable may be not defined
+
+        if (a > 0) 
+        { 
+            y = 2; 
+        } 
+        else 
+        {
+            y = 5;
+        }
+        b = y;
+
+        if (a > 0) 
+        { 
+            x = 2; 
+        } 
+        else 
+        {
+            x = [2];                                       // err47 variable may be not defined
+        }
+        c = x;
     }
 }

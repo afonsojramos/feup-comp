@@ -329,7 +329,7 @@ public class Proj {
 
                                     if (term.jjtGetChild(k) instanceof ASTAccess) {
                                         ASTAccess access = (ASTAccess) term.jjtGetChild(k);
-                                        boolean deepAccess = false;
+                                        int deepAccess = 0;
 
                                         if (functionSymbolTable.getFromAll(access.name) == null && this.symbolTables.get(moduleName).getFromAll(access.name) == null)
                                             printSemanticError(access.name, access.line, "Variable not previously defined.");
@@ -337,7 +337,7 @@ public class Proj {
                                         for (int l = 0; l < access.jjtGetNumChildren(); l++) {
                                             if (access.jjtGetChild(l) instanceof ASTArrayAccess) {
                                                 ASTArrayAccess arrayAccess = (ASTArrayAccess) access.jjtGetChild(l); 
-                                                deepAccess = true;
+                                                deepAccess++;
                     
                                                 for (int m = 0; m < arrayAccess.jjtGetNumChildren(); m++) {
                                                     if (arrayAccess.jjtGetChild(m) instanceof ASTIndex) {
@@ -357,14 +357,14 @@ public class Proj {
                                                 if (functionSymbolTable.getAcessType(access.name) == "int" || this.symbolTables.get(this.moduleName).getAcessType(access.name) == "int") //Variable previously defined as integer
                                                     printSemanticError(access.name, access.line, "This variable is a scalar, not an array.");
 
-                                                deepAccess = true;
+                                                deepAccess++;
                                             }
                                         }
 
-                                        if ((functionSymbolTable.getAcessType(access.name) != type && type == "int" && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type) && ((rhs.operator != "" && !deepAccess) || (rhs.operator != "" && rhs.jjtGetNumChildren() > 1)))
+                                        if ((functionSymbolTable.getFromAll(access.name) != null || this.symbolTables.get(this.moduleName).getFromAll(access.name) != null) && functionSymbolTable.getAcessType(access.name) != type && type == "int" && this.symbolTables.get(this.moduleName).getAcessType(access.name) != type && ((rhs.operator != "" && deepAccess == 0) || (rhs.operator != "" && rhs.jjtGetNumChildren() == deepAccess)))
                                             printSemanticError(access.name, access.line, "This variable is an array, operations can only be done with scalars."); 
 
-                                        if (functionSymbolTable.getFromAll(access.name) != null && functionSymbolTable.getVariables() != null && functionSymbolTable.getVariables().get(access.name) != null && !functionSymbolTable.getVariables().get(access.name).getInit() && functionSymbolTable.getVariables().get(access.name).getType() != "array" && assign.jjtGetParent().toString() != "While" && assign.jjtGetParent().toString() != "If" && assign.jjtGetParent().toString() != "Else")
+                                        if (functionSymbolTable.getFromAll(access.name) != null && functionSymbolTable.getVariables() != null && functionSymbolTable.getVariables().get(access.name) != null && !functionSymbolTable.getVariables().get(access.name).getInit() &&  assign.jjtGetParent().toString() != "While" && assign.jjtGetParent().toString() != "If" && assign.jjtGetParent().toString() != "Else")
                                             printSemanticError(access.name, access.line, "Variable may not be defined.");
                                     } 
                                 } 
@@ -386,7 +386,7 @@ public class Proj {
                     functionSymbolTable.getFromAll(name).setNotInit();
                 }
                 else if (assign.jjtGetParent() instanceof ASTElse){
-                    if (functionSymbolTable.getFromAll(name) != null && functionSymbolTable.getFromAll(name).getType() == type){
+                    if (functionSymbolTable.getFromAll(name) != null){
                         functionSymbolTable.getFromAll(name).setInit();
                     }
                     else if (functionSymbolTable.getFromAll(name) == null){
