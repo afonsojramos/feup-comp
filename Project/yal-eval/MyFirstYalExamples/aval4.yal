@@ -3,7 +3,7 @@ module aval4
 {
 
 function c = f(a, b) {
-	
+	c=2;
     while(a < b) {
 			c = io.read();
 			a = io.read();

@@ -5,19 +5,22 @@ function c=f(a, b) {
     if(a == b) {
 		 c = 2;
     }
+    else{
+        c = 3;
+    }
+
 }
 
 function main()
 {
  c=f(2,12);
- io.println(c); // result = 2
+ io.println(c); // result = 3
 
- c=f(4,2);
- io.println(c); // result = 2
-
- c=3;
  c=f(4,2);
  io.println(c); // result = 3
+
+ c=f(2,2);
+ io.println(c); // result = 2
 }
 
 }

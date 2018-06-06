@@ -138,10 +138,18 @@ public class SymbolTable implements Cloneable {
         }
 
         if(this.returnSymbol != null){
+
+            if(this.parameters.containsKey(this.returnSymbol.getName())){
+                Symbol symbol = this.parameters.get(this.returnSymbol.getName());
+                this.returnSymbol.setRegister(symbol.getRegister());
+            }
+            else{
+                this.returnSymbol.setRegister(registerCounter);
+                registerCounter ++;                
+            }
+
             //System.out.println("RETURN:");
-            this.returnSymbol.setRegister(registerCounter);
             //System.out.println(this.returnSymbol.getName() + " - " + this.returnSymbol.getRegister());
-            registerCounter ++;
             
         }
 

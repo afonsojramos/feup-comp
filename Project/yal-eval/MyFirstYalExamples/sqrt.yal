@@ -20,14 +20,15 @@ function a=sqrt() {
          	vsq2 = vsq1 & 3;
 	     	tvsq = tvsq1 | vsq2;
 	     	vsq = vsq << 2;
-		if(nasq <= tvsq) {
-			a = sa | 1;
-			asq = nasq;
-		} else {
-			a = sa ;
-			asq = asq << 2 ;
-		}
-		i=i+1;
+			 
+			if(nasq <= tvsq) {
+				a = sa | 1;
+				asq = nasq;
+			} else {
+				a = sa ;
+				asq = asq << 2 ;
+			}
+			i=i+1;
 	}
 
 	io.println("sqrt: ", a);
