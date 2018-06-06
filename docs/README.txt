@@ -33,10 +33,13 @@ Additionally you can add the argument "color" if your console supports it.
 
 If you want to compile the project itself you can use our script build.sh. If you want to compile and run on of the provided examples, inside the Project folder, you can either run one of our scripts semantic.sh, test_j.sh or sintatic.sh.
  
+
 DEALING WITH SYNTACTIC ERRORS: (Describe how the syntactic error recovery of your tool does work. Does it exit after the first error?) Afonso + Julieta
 
  
 SEMANTIC ANALYSIS: (Refer the semantic rules implemented by your tool) Afonso
+
+
 
  
 INTERMEDIATE REPRESENTATIONS (IRs): (for example, when applicable, briefly describe the HLIR (high-level IR) and the LLIR (low-level IR) used, if your tool includes an LLIR with structure different from the HLIR)
@@ -47,12 +50,14 @@ CODE GENERATION: (when applicable, describe how the code generation of your tool
  
 OVERVIEW: (refer the approach used in your tool, the main algorithms, the third-party tools and/or packages, etc.) Afonso
 
+In the end, we feel like we have made a highly funcitional tool with a lot of capabilities, however, if given the possibility and time, we would definitely taken a different approach for code structure, since after we realised that there was another way, it was too late for a refactor.
+
 
 TESTSUITE AND TEST INFRASTRUCTURE: (Describe the content of your testsuite regarding the number of examples, the approach to automate the test, etc.) Julieta
  
 
 TASK DISTRIBUTION:
-Afonso Jorge Ramos: Dealing with syntactic errors, semantic analysis
+Afonso Jorge Ramos: Dealing with syntactic errors, Semantic analysis
 Bárbara Sofia Silva: Code generation
 Julieta Frade: Dealing with syntactic errors, Code generation
 
