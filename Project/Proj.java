@@ -34,6 +34,12 @@ public class Proj {
                 ANSI_GREEN = "\u001B[32m";
                 ANSI_CYAN = "\u001B[36m";
                 ANSI_YELLOW = "\u001B[33m";
+                ParseException.ANSI_RESET = "\u001B[0m";
+                ParseException.ANSI_RED = "\u001B[31m";
+                ParseException.ANSI_YELLOW = "\u001B[33m"; 
+                ParseException.ANSI_RED_BOLD = "\033[1;31m";
+                ParseException.ANSI_BLUE_BRIGHT = "\033[0;94m";
+                ParseException.ANSI_GREEN_BOLD = "\033[1;32m";
             }
             ParseException.filename = args[0];
             System.out.println(
@@ -61,7 +67,7 @@ public class Proj {
             root.dump("");
             buildSymbolTables(root);
             fillFunctionSymbolTables(root);
-            //if(errorCount == 0) //if there weren't any semantic erros
+            if(errorCount == 0) //if there weren't any semantic erros
                 yalToJasmin(root);
             System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_GREEN + " The input was read sucessfully." + ANSI_RESET);
         } catch (ParseException e) {
@@ -476,8 +482,8 @@ public class Proj {
     public void argumentsAnalysis(SymbolTable functionSymbolTable, Node node) {
 
         if (node instanceof ASTCall) {
-			ASTCall call = (ASTCall) node;
-
+            ASTCall call = (ASTCall) node;
+            
             if (this.symbolTables.get(call.function) == null && call.module == "")//Excludes io module
                 printSemanticError(call.function, call.line, "Function not declared."); 
 

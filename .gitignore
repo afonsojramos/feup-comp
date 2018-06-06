@@ -14,3 +14,4 @@ JJTyal2jvmState.java
 .idea/*
 *.iml
 Project/bin
+|Project/testsuite

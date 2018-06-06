@@ -18,6 +18,15 @@ import java.io.InputStreamReader;
  * mechanisms so long as you retain the public fields.
  */
 public class ParseException extends Exception {
+
+  public static String ANSI_RESET = "";
+  public static String ANSI_RED = "";
+  public static String ANSI_YELLOW = ""; 
+  public static String ANSI_RED_BOLD = "";
+  public static String ANSI_BLUE_BRIGHT = "";
+  public static String ANSI_GREEN_BOLD = "";
+
+
 	
   /**
    * The version identifier for this Serializable class.
@@ -111,8 +120,9 @@ public class ParseException extends Exception {
       }
       expected.append(eol).append("    ");
     }
-    String retval = " Error in " + yal2jvm.errorIn
-        + "\n";
+
+    String retval = ANSI_RED_BOLD + " Error in " + ANSI_RESET + ANSI_BLUE_BRIGHT + yal2jvm.errorIn + ANSI_RED_BOLD
+        + "\n" + ANSI_RESET;
 
     char[] spaces = new char[currentToken.next.beginColumn - 1];
     Arrays.fill(spaces, ' ');
@@ -124,7 +134,7 @@ public class ParseException extends Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(fis));
 	    for (int i = 0; i < currentToken.next.beginLine - 1; ++i)
 	    	br.readLine();
-	    retval += br.readLine() + "\n" + s + "^\n";
+      retval += ANSI_RED + br.readLine() + "\n" + ANSI_GREEN_BOLD + s + "^\n" + ANSI_RESET;
   	} catch (java.io.FileNotFoundException e) {
   		return retval;
   	} catch (java.io.IOException e) {
@@ -152,7 +162,7 @@ public class ParseException extends Exception {
     } else {
       retval += "Was expecting one of:" + eol + "    ";
     }
-    retval += expected.toString() + "\n";
+    retval += ANSI_YELLOW + expected.toString() + "\n" + ANSI_RESET;
     return retval;
   }
 
