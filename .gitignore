@@ -14,4 +14,7 @@ JJTyal2jvmState.java
 .idea/*
 *.iml
 Project/bin
-|Project/testsuite
+!Project/testsuite
+!Project/examples/*.j
+.classpath
+.project
