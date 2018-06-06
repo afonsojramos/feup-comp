@@ -27,10 +27,7 @@ public class Proj {
     public static void main(String args[]) throws ParseException {
         yal2jvm parser;
 
-        if (args.length == 0) {
-            System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " Reading input ...");
-            parser = new yal2jvm(System.in);
-        } else if (args.length == 1 || args.length == 2) {
+        if (args.length == 1 || args.length == 2) {
             if (args.length == 2 && args[1].toString().equals("color")){
                 ANSI_RESET = "\u001B[0m";
                 ANSI_RED = "\u001B[31m";
@@ -49,10 +46,8 @@ public class Proj {
                 return;
             }
         } else {
-            System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " You must use one of the following:");
-            System.out.println("         java yal2jvm < file");
-            System.out.println("Or");
-            System.out.println("         java yal2jvm file");
+            System.out.println(ANSI_CYAN + "yal2jvm:" + ANSI_RESET + " You must use one the following:");
+            System.out.println("         java Proj <file> <optional:color>");
             return;
         }
 
@@ -305,6 +300,9 @@ public class Proj {
                                 if (this.symbolTables.get(this.moduleName) != null && this.symbolTables.get(call.function) != null && this.symbolTables.get(call.function).getReturnSymbol() != null && (this.symbolTables.get(this.moduleName).getAcessType(name) == "int" || functionSymbolTable.getAcessType(name) == "int") && this.symbolTables.get(call.function).getReturnSymbol().getType() == "array"){
                                     printSemanticError(call.function, call.line, "Function type mismatch.");
                                 }
+
+                                if (this.symbolTables.get(this.moduleName) != null && this.symbolTables.get(call.function) != null && this.symbolTables.get(call.function).getReturnSymbol() == null)
+                                    printSemanticError(call.function, call.line, "Function does not return.");
 
                                 argumentsAnalysis(functionSymbolTable, call);
 
