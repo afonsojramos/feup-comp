@@ -1,0 +1,46 @@
+module all {
+	
+	a; // 0 by default
+	b = 1;
+	
+	function ret = funcAbove(arg1, arg2) {
+		io.println("arg1 = ", arg1);
+		io.println("arg2 = ", arg2);
+		ret = arg1 + arg2;
+		io.println("ret in funcAbove = ", ret);
+	}
+	
+	function main() {
+		io.println("a = ", a);
+		io.println("b = ", b);
+		io.println("1 = ", 1);
+		sum = a+b;
+		dif = a-b;
+		mul = a*b;
+		div = a/b;
+		io.println("sum = ", sum);
+		io.println("dif = ", dif);
+		io.println("mul = ", mul);
+		io.println("div = ", div);
+
+		io.println();
+		
+		c = a + b; // comment this so function calls below have undeclared variable errors
+		a = a - 1;
+		io.println("c = ", c);
+		
+		io.println();
+		
+		above = funcAbove(b, c);
+		below = funcBelow(b, c);
+		io.println("funcAbove of b c = ", above);
+		io.println("funcBelow of b c = ", below);
+	}
+	
+	function ret = funcBelow(arg1, arg2) {
+		io.println("arg1 = ", arg1);
+		io.println("arg2 = ", arg2);
+		ret = arg1 + arg2;
+		io.println("ret in funcBelow = ", ret);
+	}
+}
