@@ -361,7 +361,7 @@ public class Proj {
                                         if (functionSymbolTable.getFromAll(access.name) != null && functionSymbolTable.getVariables() != null && functionSymbolTable.getVariables().get(access.name) != null)
                                             System.out.println(access.name + " " + functionSymbolTable.getVariables().get(access.name).getInit() + assign.jjtGetParent());
 
-                                        if (functionSymbolTable.getFromAll(access.name) != null && functionSymbolTable.getVariables() != null && functionSymbolTable.getVariables().get(access.name) != null && !functionSymbolTable.getVariables().get(access.name).getInit() && functionSymbolTable.getVariables().get(access.name).getType() != "array")
+                                        if (functionSymbolTable.getFromAll(access.name) != null && functionSymbolTable.getVariables() != null && functionSymbolTable.getVariables().get(access.name) != null && !functionSymbolTable.getVariables().get(access.name).getInit() && functionSymbolTable.getVariables().get(access.name).getType() != "array" && assign.jjtGetParent().toString() != "While" && assign.jjtGetParent().toString() != "If" && assign.jjtGetParent().toString() != "Else")
                                             printSemanticError(access.name, access.line, "Variable may not be defined.");
                                     } 
                                 } 
