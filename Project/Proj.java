@@ -184,7 +184,7 @@ public class Proj {
                         String returnType = functionSymbolTable.getReturnSymbol().getType();
                         
 
-                        if(this.symbolTables.get(this.moduleName).getFromAll(returnName)!= null){    
+                        if(this.symbolTables.get(this.moduleName).getFromAll(returnName)!= null){
     
                             if(!this.symbolTables.get(this.moduleName).getFromAll(returnName).getType().equals(returnType))
                                 printSemanticError(returnName, function.line, "Return type and global variable type don't match");

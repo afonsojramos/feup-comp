@@ -1,4 +1,5 @@
 *.class
+!io.class
 proj.jj
 yal2jvm.java
 yal2jvmTreeConstants.java
