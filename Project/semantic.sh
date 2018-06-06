@@ -6,4 +6,4 @@ javacc proj.jj
 cd ..
 javac Proj.java
 
-java Proj yal-eval/MyFirstYalExamples/array0.yal color
+java Proj yal-eval/SemanticTests/ftl.yal color
