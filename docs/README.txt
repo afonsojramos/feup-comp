@@ -14,6 +14,7 @@ NAME4: Julieta Frade, NR4: 201506530, GRADE4: 19, CONTRIBUTION4: 33,3%
 
 GLOBAL Grade of the project: 19
 
+--- IN DEVELOPMENT ---
 
 SUMMARY:
 The goal of this project was to apply the knowledge acquired in the course unit Compilers by building a compiler for programs in the yal language. The compiler produces valid Java Virtual Machine (JVM) instructions to Jasmin, a tool to generate Java bytecodes given assembly programs with JVM instructions.
@@ -24,7 +25,13 @@ The main features of the tool we developed are:
 
 
 EXECUTE: (indicate how to run your tool)
+To execute our tool you basically need to run the provided .jar using the following.
 
+java -jar yal2jvm.jar <file>
+
+Additionally you can add the argument "color" if your console supports it.
+
+If you want to compile the project itself you can use our script build.sh. If you want to compile and run on of the provided examples, inside the Project folder, you can either run one of our scripts semantic.sh, test_j.sh or sintatic.sh.
  
 DEALING WITH SYNTACTIC ERRORS: (Describe how the syntactic error recovery of your tool does work. Does it exit after the first error?) Afonso + Julieta
 
