@@ -14,8 +14,6 @@ NAME4: Julieta Frade, NR4: 201506530, GRADE4: 19, CONTRIBUTION4: 33,3%
 
 GLOBAL Grade of the project: 19
 
---- IN DEVELOPMENT ---
-
 SUMMARY:
 The goal of this project was to apply the knowledge acquired in the course unit Compilers by building a compiler for programs in the yal language. The compiler produces valid Java Virtual Machine (JVM) instructions to Jasmin, a tool to generate Java bytecodes given assembly programs with JVM instructions.
 The main features of the tool we developed are:
@@ -36,6 +34,27 @@ When there's something wrong with the syntactic of the yal code, the program has
 SEMANTIC ANALYSIS: (Refer the semantic rules implemented by your tool)
 We detect most semantic errors if not all, either inside nested operations, like ifs and whiles, or outside them. A file with over 40 semantic errors was delivered to demonstrate our tool's capacity. 
 For displaying these errors we indicate the line, variable and type of error.
+Errors we detect range from:
+    > duplicate functions;
+    > function type mismatch;
+    > function does not return when it should;
+    > function not declared;
+    > wrong number of arguments for a function;
+    > wrong type of arguments;
+    > undefined arguments;
+    > repeated arguments;
+    > redefinition of global variables;
+    > type mismatches;
+    > detection of size as a variable instead of a property;
+    > variables previously defined as other types;
+    > undefined variables;
+    > confusion between arrays and variables;
+    > return type not declared;
+    > undefined arrays;
+    > detection if operations are done only with scalars;
+    > undefined indexes;
+    > return type mismatch;
+And many more.
 
 INTERMEDIATE REPRESENTATIONS (IRs): (for example, when applicable, briefly describe the HLIR (high-level IR) and the LLIR (low-level IR) used, if your tool includes an LLIR with structure different from the HLIR)
 None.
