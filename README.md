@@ -1,6 +1,3 @@
-# feup-comp
-Projects for the Compilers (COMP) class of the Master in Informatics and Computer Engineering (MIEIC) at the Faculty of Engineering of the University of Porto (FEUP). 
-
 # Compiler of the yal0.4 language to Java Bytecodes
 
 ## Summary
