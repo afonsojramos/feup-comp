@@ -1,5 +1,0 @@
-module errorSharedScope {
-	function f(a) {
-		a = [1]; // error
-	}
-}

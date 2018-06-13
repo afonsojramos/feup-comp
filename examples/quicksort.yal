@@ -1,0 +1,71 @@
+module quicksort {
+	function dosort(a[], begin, end) {
+		if (begin < end) {
+			p = partition(a, begin, end);
+
+			before_p = p - 1;
+			dosort(a, begin, before_p);
+			after_p = p + 1;
+			dosort(a, after_p, end);
+		}
+	}
+
+	function after_i = partition(a[], begin, end) {
+		pivot = a[end];
+		i = begin - 1;
+		j = begin;
+		while (j <= end - 1) {
+			v = a[j];
+			if (v < pivot) {
+				i = i + 1;
+
+				swap(a, i, j);
+			}
+			j = j + 1;
+		}
+		after_i = i + 1;
+		swap(a, after_i, end);
+	}
+
+	function swap(a[], i1, i2) {
+		v1 = a[i1];
+		a[i1] = a[i2];
+		a[i2] = v1;
+	}
+
+	function quicksort(a[]) {
+		s = a.size - 1;
+		dosort(a, 0, s);
+	}
+
+	function main() {
+		a = [10];
+		a[0] = 1;
+		a[1] = 5;
+		a[2] = 3;
+		a[3] = -8;
+		a[4] = 9;
+		a[5] = 4;
+		a[6] = 1;
+		a[7] = 2;
+		a[8] = 0;
+		a[9] = -5;
+
+		quicksort(a);
+
+		print(a);
+	}
+
+	function print(a[]) {
+		s = a.size;
+		io.println("Size ", s);
+
+		i = 0;
+		while (i < s) {
+			v = a[i];
+			io.println(v);
+
+			i = i + 1;
+		}
+	}
+}
